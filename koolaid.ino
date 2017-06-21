@@ -9,44 +9,42 @@
 
 **/
 
-int mag_throttle_pin = 2; //E TODO make param
+const int FIELD_THROTTLE_PIN = 2; //E TODO make param
 
-float max_bat_voltage = 34.0;
+const double MAX_BATTERY_VOLTAGE = 34.0;
+const int PWM_PIN = 11;
 
-int min_mag_voltage = 5;
+float minFieldVoltage = 5.0;
+float maxFieldVoltage = MAX_BATTERY_VOLTAGE;
 
-int max_mag_voltage = max_bat_voltage; //E TODO this needs to be variable somewhere... This whole thing should probably be encapsulated somewhere.
+int fieldThrottle, ocr2a_val;
+double fieldVoltage,duty;
 
-int ocr2a_val = 0;
-int mag_throttle = 0;
-float duty = 0.0;
+void setFieldPWM() {
+	fieldThrottle = analogRead(FIELD_THROTTLE_PIN); //E reads field throttle
 
-float visible_voltage = 0.0;
+	fieldVoltage = ((maxFieldVoltage - minFieldVoltage) / 1023.0) * fieldThrottle + minFieldVoltage; //E maps throttle position to desired field voltage
 
-float v_in = 0.0;
+	duty = fieldVoltage / MAX_BATTERY_VOLTAGE;
 
-void setDuty() {
-	visible_voltage = ((max_mag_voltage - min_mag_voltage) / 5.0 ) * v_in + min_mag_voltage;
-	duty = visible_voltage / max_bat_voltage;
-}
+	ocr2a_val = floor((duty*256) - 1);
 
-void setOCR2A(){
-	 ocr2a_val = floor((duty * 256) - 1);
-	 
 	 if (ocr2a_val > 255) {
 	 	ocr2a_val = 255;
 	 } else if (ocr2a_val < 0) {
 	 	ocr2a_val = 0;
 	 }
-
+         Serial.println(duty);
 	 OCR2A = ocr2a_val;
 }
+
 void setup(){
 
 	Serial.begin(9600); 
 
-	pinMode(11,OUTPUT);
-		TCCR2A = _BV(COM2A1) | _BV(WGM21) | _BV(WGM20); 	//E = 10000011
+	//E Setup Fast PWM on pin 11
+	pinMode(PWM_PIN,OUTPUT);
+		TCCR2A = _BV(COM2A1) | _BV(WGM21) | _BV(WGM20); //E = 10000011
 														//E datasheet pg. 158 COM2 = 10 --> Output A (pin 3?) to non-inverted PWM
 														//E WGM2 to 011 --> Output A to fast PWM
 		
@@ -56,21 +54,13 @@ void setup(){
 		
 		//E Frequency = 16 MHz / Prescaler / 256 = 7.8 kHz for prescaler 8
 
-		OCR2A = 127;					//E 0 < OCR2A < 255
+		OCR2A = 0;					//E 0 < OCR2A < 255
 									//E D = (OCR2A + 1)/256
 
 }
 
 void loop(){
-	mag_throttle = analogRead(mag_throttle_pin);
-	v_in = mag_throttle / 1023.0 * 5;
-	Serial.print(v_in);
-    Serial.print("  ");
-	setDuty();
-	setOCR2A();
-        Serial.print(duty);
-            Serial.print("  ");
-        Serial.println(ocr2a_val);
+	setFieldPWM();
 }
 
 
