@@ -11,7 +11,8 @@
 
 #include "acid.h"
 #include <Arduino.h>
-
+#include <digitalWriteFast.h>
+	
 void setup(){
 
 	Serial.begin(9600); 
