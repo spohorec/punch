@@ -8,29 +8,28 @@ Electric Kool-Aide Motor Controller-Controller
 
 */
 
-#define V_BATTERY_MAX 33.6 //E! TODO move elsewhere and confirm value	
 
 MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch
 			/*int p_forward_switch, int p_reverse_switch,*/ ) {
 	_p_motor_pin = p_motors_pin;
 	_p_regen_pin = p_regen_pin;
 
-	_p_forward_switch = p_forward_switch;
-	_p_reverse_switch = p_reverse_switch;
+	// _p_forward_switch = p_forward_switch;
+	// _p_reverse_switch = p_reverse_switch;
 	_p_regen_switch = p_regen_switch;
 
 	// _reverse_on = false;
 	_regen_on = false;
 }
 
-MotorInterface::SendCmd(int cmd) {
+MotorInterface::SendCmd(unsigned char cmd) {
 	int duty = floor(cmd / 255.0);
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
 	analogWrite(_p_motor_pin,duty);
 }
 
-MotorInterface::SendRegenCmd(int cmd) {
+MotorInterface::SendRegenCmd(unsigned char cmd) {
 	int duty = floor(cmd / 255.0);
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;

@@ -11,25 +11,27 @@ Electric Kool-Aide Commander
 //This means that it will map input voltages between 0 and 5 volts into integer values between 0 and 1023. 
 	//This yields a resolution between readings of: 5 volts / 1024 units or, .0049 volts (4.9 mV) per unit.
 
-PhysCommander::PhysCommander(int p_main_thr, int p_field_thr) {//(Throttle* main_th, Throttle* field_th) {//, int reverse_pin) {
-	_p_main_thr = main_thr;
-	_p_field_thr = field_thr;
+PhysCommander::PhysCommander(int p_motor_thr, int p_field_thr) {//(Throttle* main_th, Throttle* field_th) {//, int reverse_pin) {
+	_p_motor_thr = p_motor_thr;
+	_p_field_thr = p_field_thr;
+
+	pinMode(_p_motor_thr,INPUT);
+	pinMode(_p_field_thr,INPUT);
 	// _reverse_pin = reverse_pin;
 }
 
-int PhysCommander::getMotorCmd() {
-	int cmd = _main_th->getCmd();
+unsigned char PhysCommander::getMotorCmd() {
+	return analogRead(_p_motor_thr);
 	// int reverse = digitalRead(_reverse_pin);
 
 	// if (reverse) cmd *= 1;
-
-	return cmd;
 }
+
 unsigned char PhysCommander::getFieldCmd() {
-	return _field_th->getCmd()
+	return analogRead(_p_field_thr);
 }
 
-int PhysCommander::getSteeringCmd() {
+unsigned char PhysCommander::getSteeringCmd() {
 	return 0;
 }
 
@@ -43,8 +45,8 @@ bool PhysCommander::getEstop() {
 // int RCCommander::getSteeringCmd() {}
 // int RCCommander::getEstop() {}
 
-JetsonCommander::JetsonCommander(ros::NodeHandle *nh)
-unsigned char JetsonCommander::getMotorCmd()
-unsigned char JetsonCommander::getFieldCmd()
-int JetsonCommander::getSteeringCmd()
-int JetsonCommander::getEstop()
+// JetsonCommander::JetsonCommander(ros::NodeHandle *nh) {}
+// unsigned char JetsonCommander::getMotorCmd() {}
+// unsigned char JetsonCommander::getFieldCmd() {}
+// int JetsonCommander::getSteeringCmd() {}
+// int JetsonCommander::getEstop() {}

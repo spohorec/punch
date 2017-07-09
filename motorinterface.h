@@ -27,17 +27,20 @@ SERVO
 
 */
 
+#define V_BATTERY_MAX 33.6 //E! TODO move elsewhere and confirm value	
+
 class MotorInterface {
 public:
-	MotorInterface();
+	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch);
 	void sendCmd();
 	void sendRegenCmd();
 
 
 private:
-	int _p_motor_pin, _p_regen_pin;
-	int _p_forward_switch, _p_reverse_switch, _p_regen_switch;
-	bool _p_reverse_on, _p_regen_on;
+	int _p_motor_pwm, _p_regen_pwm;
+	// int _p_forward_switch, _p_reverse_switch, _p_regen_switch;
+	int  _p_regen_switch;
+	bool _regen_on; //_p_reverse_on,
 
 };
 
