@@ -24,14 +24,15 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_swi
 }
 
 void MotorInterface::sendCmd(unsigned char cmd) {
-	int duty = floor(cmd / 255.0);
+	int duty = cmd;
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
+
 	analogWrite(_p_motor_pwm,duty);
 }
 
 void MotorInterface::sendRegenCmd(unsigned char cmd) {
-	int duty = floor(cmd / 255.0);
+	int duty = cmd;
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
 	analogWrite(_p_regen_pwm,duty);
@@ -46,7 +47,7 @@ FieldInterface::FieldInterface(float min_field_v, float max_field_v) {
 }
 
 void FieldInterface::sendCmd(unsigned char cmd) {
-	double v_desired = (cmd / 1023.0) * (_max_field_v - _min_field_v) + _min_field_v;
+	double v_desired = ((float) cmd / 255) * (_max_field_v - _min_field_v) + _min_field_v;
 	double duty = v_desired / V_BATTERY_MAX; //E!? TODO would battery sensing be a good idea?
 	int reg_value = floor(duty*256) - 1; //E duty cycle of PWM is given by (reg_value + 1)/256
 
