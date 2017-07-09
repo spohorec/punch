@@ -13,24 +13,36 @@ Electric Kool-Aide Commander
 //This means that it will map input voltages between 0 and 5 volts into integer values between 0 and 1023. 
 	//This yields a resolution between readings of: 5 volts / 1024 units or, .0049 volts (4.9 mV) per unit.
 
-PhysCommander::PhysCommander(int p_motor_thr, int p_field_thr) {//(Throttle* main_th, Throttle* field_th) {//, int reverse_pin) {
-	_p_motor_thr = p_motor_thr;
-	_p_field_thr = p_field_thr;
+PhysCommander::PhysCommander(Throttle *motor_throttle, Throttle *field_throttle) {//(Throttle* main_th, Throttle* field_th) {//, int reverse_pin) {
+	_motor_throttle = motor_throttle;
+	_field_throttle = field_throttle;
 
-	pinMode(_p_motor_thr,INPUT);
-	pinMode(_p_field_thr,INPUT);
+	// pinMode(_p_motor_thr,INPUT);
+	// pinMode(_p_field_thr,INPUT);
 	// _reverse_pin = reverse_pin;
 }
 
 unsigned char PhysCommander::getMotorCmd() {
-	return analogRead(_p_motor_thr);
-	// int reverse = digitalRead(_reverse_pin);
+	unsigned char cmd = _motor_throttle->getThrottle();
+	// int raw_inp =  analogRead(_p_motor_thr);
+	// unsigned char scaled_input = (unsigned char) ((double) raw_inp / 1023.0 * 255);
+	// // Serial.print(raw_inp);
+	// // Serial.print(" ");
+	// // Serial.println(scaled_input);
+	// return scaled_input;
+	return cmd;
+	// // int reverse = digitalRead(_reverse_pin);
 
-	// if (reverse) cmd *= 1;
+	// // if (reverse) cmd *= 1;
 }
 
 unsigned char PhysCommander::getFieldCmd() {
-	return analogRead(_p_field_thr);
+	unsigned char cmd = _field_throttle->getThrottle();
+
+	return cmd;
+	// int raw_inp = analogRead(_p_field_thr);
+	// unsigned char scaled_input = (unsigned char) ((double) raw_inp / 1023.0 * 255);
+	// return scaled_input;
 }
 
 unsigned char PhysCommander::getSteeringCmd() {

@@ -9,6 +9,7 @@ Electric Kool-Aide Commander
 */
 
 #include <Arduino.h>
+#include "throttle.h"
 
 class Commander {
 public:
@@ -22,7 +23,7 @@ public:
 
 class PhysCommander: public Commander {
 public:
-	PhysCommander(int p_motor_thr, int p_field_thr); //(Throttle* main_th, Throttle* field_th) //, int reverse_pin);
+	PhysCommander(Throttle *motor_throttle, Throttle *field_throttle); //(Throttle* main_th, Throttle* field_th) //, int reverse_pin);
 	unsigned char getMotorCmd();
 	unsigned char getFieldCmd();
 	unsigned char getSteeringCmd();
@@ -30,7 +31,7 @@ public:
 private:
 	// Throttle* _main_th, _field_th;
 	// int _reverse_pin;
-	int _p_motor_thr, _p_field_thr;
+	Throttle *_motor_throttle, *_field_throttle;
 
 };
 
