@@ -10,12 +10,11 @@ Electric Kool-Aide Throttle with curves.
 
 class Throttle {
 public:
-	Throttle(int throttle_pin, int (*map) (int));
+	Throttle(int throttle_pin);
 	getCmd();
 	getRawThrottle();
 private:
 	int _throttle_pin;
-	int (*_map) (int);
 };
 
 Throttle::Throttle(int throttle_pin, int (*map) (int)) {
