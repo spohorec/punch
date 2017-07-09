@@ -10,6 +10,7 @@
 **/
 
 #include "acid.h"
+#include <Arduino.h>
 
 void setup(){
 
@@ -36,7 +37,7 @@ void setup(){
 	// FieldInterface field();
 	// PhysCommander commander(P_MOTOR_THROTTLE, P_FIELD_THROTTLE);
 
-	Acid acid();
+	Acid acid;
 	acid.prep();
 
 	acid.drop();

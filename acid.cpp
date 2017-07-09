@@ -9,6 +9,8 @@
 
 **/
 
+#include "acid.h"
+
 Acid::Acid():
 	_kelly(P_MOTOR_PWM,P_REGEN_PWM,0),
 	_field(),
@@ -17,12 +19,12 @@ Acid::Acid():
 	//E Do nothing for now!
 }
 
-Acid::prep() {
+void Acid::prep() {
 	_field.sendCmd(0); //E zero outputs
 	_kelly.sendCmd(0);
 }
 
-Acid::drop() {
+void Acid::drop() {
 
 	while (TRIPPING) {
 

@@ -8,6 +8,8 @@ Electric Kool-Aide Commander
 
 */
 
+#include <Arduino.h>
+
 class Commander {
 public:
 	virtual unsigned char getMotorCmd();

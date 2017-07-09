@@ -8,11 +8,12 @@ Electric Kool-Aide Motor Controller-Controller
 
 */
 
+#include "motorinterface.h"
 
 MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch
 			/*int p_forward_switch, int p_reverse_switch,*/ ) {
-	_p_motor_pin = p_motors_pin;
-	_p_regen_pin = p_regen_pin;
+	_p_motor_pwm = p_motor_pwm;
+	_p_regen_pwm = p_regen_pwm;
 
 	// _p_forward_switch = p_forward_switch;
 	// _p_reverse_switch = p_reverse_switch;
@@ -22,18 +23,18 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_swi
 	_regen_on = false;
 }
 
-MotorInterface::SendCmd(unsigned char cmd) {
+void MotorInterface::sendCmd(unsigned char cmd) {
 	int duty = floor(cmd / 255.0);
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
-	analogWrite(_p_motor_pin,duty);
+	analogWrite(_p_motor_pwm,duty);
 }
 
-MotorInterface::SendRegenCmd(unsigned char cmd) {
+void MotorInterface::sendRegenCmd(unsigned char cmd) {
 	int duty = floor(cmd / 255.0);
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
-	analogWrite(_p_regen_pin,duty);
+	analogWrite(_p_regen_pwm,duty);
 }
 
 // ----------------------------------------------------------------------------------

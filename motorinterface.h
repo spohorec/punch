@@ -27,13 +27,15 @@ SERVO
 
 */
 
+#include <Arduino.h>
+		
 #define V_BATTERY_MAX 33.6 //E! TODO move elsewhere and confirm value	
 
 class MotorInterface {
 public:
 	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch);
-	void sendCmd();
-	void sendRegenCmd();
+	void sendCmd(unsigned char cmd);
+	void sendRegenCmd(unsigned char cmd);
 
 
 private:
@@ -63,7 +65,7 @@ private:
 class FieldInterface {
 public:
 	FieldInterface(float min_field_v=0.0, float max_field_v=16.0); //E! what should min actually be?
-	void sendCmd();
+	void sendCmd(unsigned char cmd);
 	void getMaxVoltage();
 
 private:
