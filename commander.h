@@ -5,6 +5,7 @@ Electric Kool-Aide Commander
 	@author Sarah Pohorecky <spohorec@mit.edu>
 
 	@date 2017-07-08 creation.
+	@date 2017-07-13 update with reverse handling.
 
 */
 
