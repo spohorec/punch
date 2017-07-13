@@ -1,38 +1,36 @@
 /**
  * speedsensor.cpp
- * Gigatron motor control Arduino code for Hall Effect sensors.
- * 
+ * Electric Kool-Aid Motor Encoder Handling
+ * [Ported from 5yler/gigabug/speedsensor.cpp]
+
  * @author  Bayley Wang       <bayleyw@mit.edu>
  * @author  Chris Desnoyers   <cjdesno@mit.edu>
  * @author  Daniel Gonzalez   <dgonz@mit.edu>
  * @author  Syler Wagner      <syler@mit.edu>
+ * @author  Sarah Pohorecky   <spohorec@mit.edu>
  *
  * @date    2016-01-10    syler   moved to separate .cpp file, header is in classes.h
  * @date    2016-03-27    syler   fixed RPM calculation for new quadrature encoders and cleaned up encoder interrupt pin setup
- *
+ * @date    2017-07-09    sarah   ported from gigabug, minor changes
+ * @date    2017-07-13    sarah   adapted for Kool-Aid setup (single encoder, not quadrature)
  **/
 
 #include "speedsensor.h"
-#include "isr.h"
 
-#define PULSES_PER_REV 600.0 //$ number of encoder pulses per full motor revolution
+#define PULSES_PER_REV 600.0 //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Koolaid
+
+volatile long encoder_ticks;  //$ number of ticks for each encoder
+
+//E Encoder Interrupt Service Routine
+void EncoderISR() { 
+  encoder_ticks+=1;
+}
 
 SpeedSensor::SpeedSensor(int interrupt, int interval) {
-  _interrupt = interrupt;
-  _interval = interval;
-  //interval is set in gigatron.ino; it is the interval at which the context loop runs, 
-  //and not related to any property of the encoders
+  _interrupt = interrupt; //E The Uno only has two interrupts (Int0 --> D2, Int1 --> D3)
+  _interval = interval; // Interval at which the main loop runs, not related to any property of the encoders
 
-  //see https://www.arduino.cc/en/Reference/AttachInterrupt for interrupt documentation
-  //in summary, attachInterrupt(4) likely attaches an interrupt to pin 18, and does not attach one to pin 4
-
-  /*$ actually, the link above says the Mega2560 has the following mapping:
-      Interrupt     0   1   2   3   4   5
-      Mega2560 pin  2   3   21  20  19  18
-  */
-
-  pinMode(P_ENCODER_A, INPUT_PULLUP);
-  pinMode(P_ENCODER_B, INPUT_PULLUP);
+  pinMode(P_ENCODER, INPUT_PULLUP);
 
   attachInterrupt(ENCODER_INTERRUPT, EncoderISR, FALLING);
   
@@ -50,7 +48,7 @@ long SpeedSensor::GetTicks() {
 }
 
 
-//$ TODO: this is unsigned, need to fix!
+//$ TODO: this is unsigned, need to fix! //E! TODO still need to do this, but maybe not here...
 long SpeedSensor::GetRPM() {
   long ticks;
 
