@@ -13,7 +13,7 @@ Electric Kool-Aide Commander
 
 class Commander {
 public:
-	virtual unsigned char getMotorCmd();
+	virtual int getMotorCmd();
 	virtual unsigned char getFieldCmd();
 	virtual unsigned char getSteeringCmd();
 	virtual bool getEstop();
@@ -23,28 +23,16 @@ public:
 
 class PhysCommander: public Commander {
 public:
-	PhysCommander(Throttle *motor_throttle, Throttle *field_throttle); //(Throttle* main_th, Throttle* field_th) //, int reverse_pin);
-	unsigned char getMotorCmd();
+	PhysCommander(Throttle *motor_throttle, Throttle *field_throttle, int p_reverse);
+	int getMotorCmd();
 	unsigned char getFieldCmd();
 	unsigned char getSteeringCmd();
+	int getDirection();
 	bool getEstop();
 private:
-	// Throttle* _main_th, _field_th;
-	// int _reverse_pin;
 	Throttle *_motor_throttle, *_field_throttle;
-
+	int _p_reverse;
 };
-
-// class RCCommander: public Commander {
-// public:
-// 	RCCommander(RCDecoder *motor_d, RCDecoder *field_d, RCDecoder *steer_d, RCDecoder *kill_d);
-// 	unsigned char getMotorCmd();
-// 	unsigned char getFieldCmd();
-// 	unsigned char getSteeringCmd();
-// 	bool getEstop();
-// private:
-
-// };
 
 // class JetsonCommander: public Commander {
 // public:

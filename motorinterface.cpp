@@ -10,21 +10,24 @@ Electric Kool-Aide Motor Controller-Controller
 
 #include "motorinterface.h"
 
-MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch
-			/*int p_forward_switch, int p_reverse_switch,*/ ) {
+MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch ) {
 	_p_motor_pwm = p_motor_pwm;
 	_p_regen_pwm = p_regen_pwm;
 
-	// _p_forward_switch = p_forward_switch;
-	// _p_reverse_switch = p_reverse_switch;
-	_p_regen_switch = p_regen_switch;
+	_p_reverse_switch = p_reverse_switch;
 
-	// _reverse_on = false;
+	_reverse_on = false;
 	_regen_on = false;
 }
 
 void MotorInterface::sendCmd(unsigned char cmd) {
-	int duty = cmd;
+	if (cmd < 0) {
+		setReverseOn(true);
+	} else {
+		setReverseOn(false);
+	}
+
+	int duty = abs(cmd);
 	if (duty > 255) duty = 255;
 	if (duty < 0) duty = 0;
 
@@ -38,6 +41,19 @@ void MotorInterface::sendRegenCmd(unsigned char cmd) {
 	analogWrite(_p_regen_pwm,duty);
 }
 
+
+void MotorInterface::setReverseOn(bool reverse_on) {
+	if 	(_reverse_on != reverse_on) { //E don't bother changing pin modes if we are still going in the same direction
+		if (reverse_on) {
+			pinMode(_p_reverse_switch,OUTPUT);
+			digitalWrite(_p_reverse_switch,LOW); //E Kelly switches are ON when GROUNDED
+		} else {
+			pinMode(_p_reverse_switch,INPUT); //E this makes pin floating
+		}
+		_reverse_on = reverse_on;
+	} 
+}
+
 // ----------------------------------------------------------------------------------
 
 FieldInterface::FieldInterface(float min_field_v, float max_field_v) {
@@ -48,7 +64,7 @@ FieldInterface::FieldInterface(float min_field_v, float max_field_v) {
 
 void FieldInterface::sendCmd(unsigned char cmd) {
 	double v_desired = ((float) cmd / 255) * (_max_field_v - _min_field_v) + _min_field_v;
-	double duty = v_desired / V_BATTERY_MAX; //E!? TODO would battery sensing be a good idea?
+	double duty = v_desired / V_BATTERY_MAX;
 	int reg_value = floor(duty*256) - 1; //E duty cycle of PWM is given by (reg_value + 1)/256
 
 	if (reg_value > 255) reg_value = 255;

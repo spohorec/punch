@@ -13,15 +13,13 @@ KELLY
 	-2 pwm pins
 		-motor speed
 		-regen
-	-3 switches
+	-1 switch
 		-reverse
-		-regen
-		-forward
 FIELD
 	-1 pwm pin
 		-field driver switch signal
 SERVO
-	-2 pwm (probably)
+	-2 pwm
 		-rotate right
 		-rotate left
 
@@ -33,16 +31,15 @@ SERVO
 
 class MotorInterface {
 public:
-	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_regen_switch);
+	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch);
 	void sendCmd(unsigned char cmd);
+	void setReverseOn(bool reverse_on);
 	void sendRegenCmd(unsigned char cmd);
-
 
 private:
 	int _p_motor_pwm, _p_regen_pwm;
-	// int _p_forward_switch, _p_reverse_switch, _p_regen_switch;
-	int  _p_regen_switch;
-	bool _regen_on; //_p_reverse_on,
+	int _p_reverse_switch;
+	bool _regen_on, _p_reverse_on,
 
 };
 
