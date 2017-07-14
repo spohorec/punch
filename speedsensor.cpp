@@ -13,52 +13,77 @@
  * @date    2016-03-27    syler   fixed RPM calculation for new quadrature encoders and cleaned up encoder interrupt pin setup
  * @date    2017-07-09    sarah   ported from gigabug, minor changes
  * @date    2017-07-13    sarah   adapted for Kool-Aid setup (single encoder, not quadrature)
+ * @date    2017-07-13    sarah   more general RPM calc and interrupt setup, commented
  **/
 
 #include "speedsensor.h"
 
-#define PULSES_PER_REV 600.0 //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Koolaid
+#define PULSES_PER_REV 600.0 //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Koolaid and put elsewhere
 
-volatile long encoder_ticks;  //$ number of ticks for each encoder
+volatile long encoder_ticks;  //E number of ticks recorded on the encoder
 
-//E Encoder Interrupt Service Routine
+/**
+ * @func EncoderISR
+ * @brief Encoder Interrupt Service Routine. Increments tick counter.
+**/
 void EncoderISR() { 
-  encoder_ticks+=1;
+	encoder_ticks+=1;
 }
 
-SpeedSensor::SpeedSensor(int interrupt, int interval) {
-  _interrupt = interrupt; //E The Uno only has two interrupts (Int0 --> D2, Int1 --> D3)
-  _interval = interval; // Interval at which the main loop runs, not related to any property of the encoders
+/**
+ * @constr SpeedSensor::SpeedSensor
+ * @brief clears encoder reading and sets up interrupt routine for encoder
+ * @param [int] <p_encoder> pin attached to the output of the encoder
+ * @param [int] <interrupt> interrupt to attach to encoder (on Uno, either 0(D2) or 1(D3))
+ * @param [double] <pulses_per_rev> number of encoder pulses per revolution of motor
+ **/
+SpeedSensor::SpeedSensor(int p_encoder, int interrupt, double pulses_per_rev) {
+	_p_encoder = p_encoder;
+	_interrupt = interrupt;
+	_pulses_per_rev = pulses_per_rev;
 
-  pinMode(P_ENCODER, INPUT_PULLUP);
-
-  attachInterrupt(ENCODER_INTERRUPT, EncoderISR, FALLING);
-  
-  encoder_ticks = 0;
+	pinMode(_p_encoder, INPUT_PULLUP); //E encoder requires a pullup resistor
+	attachInterrupt(_interrupt, EncoderISR, FALLING); //E! TODO update this to attachPinToInterrupt()?
+	encoder_ticks = 0;
+	
+	_t_last_read = millis();
 }
 
-//$ returns number of ticks per S_LOOP_INTERVAL
-long SpeedSensor::GetTicks() {
-  long ticks;
+/**
+ * @func SpeedSensor::getTicks
+ * @brief gets number of ticks from encoder since last call 
+ * @returns [long] ticks since last call
+**/
+long SpeedSensor::getTicks() {
+	long ticks;
 
-    ticks = encoder_ticks;
-    encoder_ticks = 0;
+	ticks = encoder_ticks;
+	encoder_ticks = 0;
 
-  return ticks;
+	_t_last_read = millis(); //E updates last read time
+
+	return ticks;
 }
 
+/**
+ * @func SpeedSensor::getRPM
+ * @brief gets rpm of motor from recorded encoder ticks
+ * @returns [long] rpm of motor
+**/
+long SpeedSensor::getRPM() {
 
-//$ TODO: this is unsigned, need to fix! //E! TODO still need to do this, but maybe not here...
-long SpeedSensor::GetRPM() {
-  long ticks;
+	long t_last_read = _t_last_read; //E get time of last read since getTicks() will overwrite it
+	long ticks = getTicks();
 
-    ticks = encoder_ticks;
-    encoder_ticks = 0;
-  
-  double motor_revs = (double) ticks / PULSES_PER_REV;
-  double rpm = motor_revs * (60.0 * 1000) / _interval;
+	long t_current_read = _t_last_read;
+	long dt = t_current_read - t_last_read; //E length of time since last read [ms]
 
-  return (long) rpm; 
+
+	double motor_revs = (double) ticks / _pulses_per_rev;
+
+	double rpm = motor_revs / dt * (1000 * 60.0); //E calculates revs/ms and converts to revs/min
+
+	return (long) rpm; 
 
 }
 
