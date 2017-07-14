@@ -8,7 +8,7 @@
  * 	@date 2017-07-13 update with reverse handling.
  * 	@date 2017-07-13 refactor, hopefully more reasonably?
  *	@date 2017-07-13 added ServoInterface outline.
- * 
+ *  @date 2017-07-14 refactored with references. Bug fixing.
 **/
 
 #include "motorinterface.h"
@@ -20,11 +20,14 @@
  * @param [int] <p_regen_pwm> pin tied to input to field controller
  * @param [int] <p_reverse_switch> pin tied to Kelly KEB reverse switch
  * @param [int] <regen_min_field> minimum field inp needed for regen to function
+ * @param [FieldInterface] <field> field interface object to control field
+ * @param [PIDController] <motor_pid> PID Controller for the motors (speed loop)
+ * @param [SpeedSensor] <encoder> motor encoder interface
 **/
-MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field):
-		_speed_sensor(ENCODER_INTERRUPT),
-		_motor_pid(KP_MOTOR,KI_MOTOR,KD_MOTOR,255,-255),
-		_field(5.0,9.0,12.0,30,80,80.0,P_TEMP_INDICATOR) {
+MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field, FieldInterface& field, PIDController& motor_pid, SpeedSensor& encoder):
+		_encoder(encoder),
+		_motor_pid(motor_pid),
+		_field(field) {
 
 	_p_motor_pwm = p_motor_pwm;
 	_p_regen_pwm = p_regen_pwm;
@@ -46,7 +49,7 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
 	_last_field_input = 0;
 	_last_regen_input = 0;
 
-	_last_rpm = 0; //E last RPM reading from _speed_sensor
+	_last_rpm = 0; //E last RPM reading from _encoder
 }
 
 /**
@@ -61,7 +64,7 @@ void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
 	_last_field_cmd = field_cmd;
 	_last_regen_cmd = regen_cmd;
 
-	_last_rpm = _speed_sensor.getRPM();
+	_last_rpm = _encoder.getRPM();
 
 	handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs
 	handleRegen(); 
@@ -85,7 +88,7 @@ void MotorInterface::handleField() {
 	if (field_input < 0 ) field_input = 0;
 
 	_field.sendCmd(field_input);
-	_last_field_input = field_cmd;
+	_last_field_input = field_input;
 }
 
 /**
@@ -171,12 +174,13 @@ void MotorInterface::setReverseOn(bool reverse_on) {
  * @param [long] <rpm_upper_limit> rpm above which max_field_v should be set to fast_max_v 
  * @param [double] <overheat_temperature> temperature at which to set temperature warning indicator
  * @param [int] <p_temp_indicator> pin attached to input of temperature warning indicator 
+ * @param [Thermistor] <thermistor> thermistor object for getting motor temperature
 **/
 FieldInterface::FieldInterface(double min_v, 
 	double slow_max_v, double fast_max_v, 
 	long rpm_lower_limit, long rpm_upper_limit, 
-	double overheat_temperature, int p_temp_indicator)
-	 : _thermistor(P_THERMISTOR,THERM_T0,THERM_R0,THERM_B) {
+	double overheat_temperature, int p_temp_indicator, Thermistor& thermistor)
+	 : _thermistor(thermistor) {
 
 	_slow_max_v = slow_max_v;
 	_fast_max_v = fast_max_v;
@@ -248,10 +252,12 @@ void FieldInterface::checkOverheat() {
  * @param [int] <p_servo_pwmA> pin connected to PWM A input of MegaMoto Controller
  * @param [int] <p_servo_pwmB> pin connected to PWM B input of MegaMoto Controller
  * @param [int] <p_servo_enable> pin connected to enable input of MegaMoto Controller
+ * @param [AngleSensor] <servo_pot> servo feedback potentiometer
+ * @param [PIDController] <servo_pid> servo PID Controller
 **/
-ServoInterface::ServoInterface(int p_servo_pwmA, int p_servo_pwmB, int p_servo_enable)
-		: _servo_pot(P_SERVO_POT,SERVO_POT_MIN,SERVO_POT_MID,SERVO_POT_MAX),
-		  _servo_pid(KP_SERVO,KI_SERVO,KD_SERVO,255,-255) {
+ServoInterface::ServoInterface(int p_servo_pwmA, int p_servo_pwmB, int p_servo_enable, AngleSensor& servo_pot, PIDController& servo_pid)
+		: _servo_pot(servo_pot),
+		  _servo_pid(servo_pid) {
 	_p_servo_pwmA = p_servo_pwmA;
 	_p_servo_pwmB = p_servo_pwmB;
 	_p_servo_enable = p_servo_enable;

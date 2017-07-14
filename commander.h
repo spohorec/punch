@@ -7,11 +7,16 @@
  * @date 2017-07-08 	creation.
  * @date 2017-07-13 	update with reverse handling.
  * @date 2017-07-14 	outlined jetson commander and some additional methods
-
+ * @date 2017-07-14 refactored with references. Bug fixing. Added header guards.
 **/
+
+#ifndef __COMMANDER_H
+#define __COMMANDER_H
 
 #include <Arduino.h>
 #include "sensors.h"
+
+// ----------------------------------------------------------------------------------
 
 /**
  * @class Commander
@@ -36,7 +41,7 @@ public:
 **/
 class PhysCommander: public Commander {
 public:
-	PhysCommander(int p_reverse, int p_brake_1, int p_brake_2);
+	PhysCommander(int p_reverse, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle);
 	int getMotorCmd();
 	int getFieldCmd();
 	int getSteeringCmd();
@@ -46,7 +51,7 @@ public:
 private:
 	int getDirection();
 
-	Throttle _motor_throttle, _field_throttle;
+	Throttle& _motor_throttle, _field_throttle;
 	
 	int _p_reverse, _p_brake_1, _p_brake_2;
 };
@@ -70,3 +75,5 @@ public:
 private:
 
 };
+
+#endif

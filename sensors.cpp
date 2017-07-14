@@ -16,11 +16,12 @@
  * @date    2017-07-13    sarah   more general RPM calc and interrupt setup, commented
  * @date	2017-07-13	  sarah   renamed speedsensor-->sensors, added AngleSensor outline
  * @date	2017-07-13 	  sarah   moved Throttle and Thermistor defs, minor type/name updates and doc
+ * @date 	2017-07-14    sarah   refactored with references. Bug fixing.
  **/
 
 #include "sensors.h"
+#include <Arduino.h>
 
-#define PULSES_PER_REV 600.0 //@def //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Kool-Aid
 
 // ----------------------------------------------------------------------------------------------
 

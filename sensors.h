@@ -12,9 +12,11 @@
  * @date	2017-07-13	sarah 	more general RPM calc and interrupt setup, commented
  * @date	2017-07-13	sarah 	renamed speedsensor-->sensors, added AngleSensor outline
  * @date  2017-07-13  sarah   moved Throttle and Thermistor defs, minor type/name updates and doc
+ * @date 2017-07-14   sarah   refactored with references. Bug fixing. Added header guards.
  **/
 
-#include <Arduino.h>
+#ifndef __SENSORS_H
+#define __SENSORS_H
 
 // ----------------------------------------------------------------------------------------------
 
@@ -81,9 +83,12 @@ private:
 **/
 class Thermistor {
 public:
-  Thermistor(int p_thermistor, double T0, double R0, double B);
+  Thermistor(int p_thermistor, double reference_res, double T0, double R0, double B);
   double getTemperature();
 private:
   int _p_thermistor;
+  double _reference_res;
   double _T0, _R0, _B, _rInf;
 };
+
+#endif

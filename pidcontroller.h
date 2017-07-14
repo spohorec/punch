@@ -7,17 +7,20 @@
  *
  * @date    2016-01-10    syler   refactored header files
  * @date  	2017-07-09	  sarah   ported from gigabug, minor changes
+ * @date 2017-07-14 	  sarah   Added header guards.
  **/
 
-#ifndef __CLASSES_H
-#define __CLASSES_H
+#ifndef __PIDCONTROLLER_H
+#define __PIDCONTROLLER_H
 
 //$ constants
-const static double RPM_TO_M_S = (2 * PI * wheelRadius) / 60.0;   //$ conversion from RPM to meters per second
+// const static double RPM_TO_M_S = (2 * PI * wheelRadius) / 60.0;   //$ conversion from RPM to meters per second
 
-const static double STEERING_PWM_RANGE = 255.0;
-const static double STEERING_ANGLE_RANGE = 50 * (PI / 180); //$ [radians] this is the correct steering range
-const static double ABS_MAX_STEERING_ANGLE = 25 * (PI / 180); //$ [radians]
+// const static double STEERING_PWM_RANGE = 255.0;
+// const static double STEERING_ANGLE_RANGE = 50 * (PI / 180); //$ [radians] this is the correct steering range
+// const static double ABS_MAX_STEERING_ANGLE = 25 * (PI / 180); //$ [radians]
+
+// ----------------------------------------------------------------------------------
 
 class PIDController {
 public:

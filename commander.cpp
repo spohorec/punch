@@ -7,6 +7,7 @@
  * @date 2017-07-08 	creation.
  * @date 2017-07-13 	update with reverse handling.
  * @date 2017-07-14 	outlined jetson commander and some additional methods
+ * @date 2017-07-14 	refactored with references. Bug fixing.
 **/
 
 #include "commander.h"
@@ -19,9 +20,9 @@
  * @param [int] <p_brake_1> brake 1 switch input pin
  * @param [int] <p_brake_2> brake 2 switch input pin
 **/
-PhysCommander::PhysCommander(int p_reverse, int p_brake_1, int p_brake_2) 
-		: _motor_throttle(P_MOTOR_THROTTLE,MOTOR_THROTTLE_MIN,MOTOR_THROTTLE_MAX),
-		  _field_throttle(P_FIELD_THROTTLE,FIELD_THROTTLE_MIN,FIELD_THROTTLE_MAX) {
+PhysCommander::PhysCommander(int p_reverse, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle) 
+		: _motor_throttle(motor_throttle),
+		  _field_throttle(field_throttle) {
 
 	_p_reverse = p_reverse;
 	_p_brake_1 = p_brake_1;
@@ -76,7 +77,7 @@ int PhysCommander::getRegenCmd(){
  * @returns [int] +1 or -1 whether to go forwards or backwards
  **/
 int PhysCommander::getDirection() {
-	if digitalRead(_p_reverse) {
+	if (digitalRead(_p_reverse)) {
 		return -1;
 	} else {
 		return 1;
@@ -147,7 +148,7 @@ int JetsonCommander::getSteeringCmd() {
  * @brief gets regen command from jetson
  * @returns [int] regen command (0-255)
  **/
-int getRegenCmd() {
+int JetsonCommander::getRegenCmd() {
 	//E! TODO
 	return 0;
 }

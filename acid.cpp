@@ -6,6 +6,7 @@
  *
  * @date 2017-07-08 creation
  * @date 2017-07-14 some outlining
+ * @date 2017-07-14 refactored with references. Bug fixing.
 **/
 
 #include "acid.h"
@@ -13,14 +14,19 @@
 /**
  * @constr Acid::Acid
  * @brief sets loop intervals and initializes objects
+ * @param [PhysCommander] <pcommander> gets human command input
+ * @param [JetsonCommander] <jcommander> gets autonomous command input
+ * @param [MotorInterface] <motor> interfaces with motor and its sensors & systems
+ * @param [ServoInterface] <servo> interfaces with servo and its sensors & systems
  * @param [int] <motor_interval> speed-control loop interval
  * @param [int] <steer_interval> steer-control loop interval
  * @param [int] <pub_interval> ROS publishing loop interval
 **/
-Acid::Acid(int motor_interval, int steer_interval, int pub_interval)
-		: _pcommander(P_REVERSE_SWITCH, P_BRAKE_1, P_BRAKE_2),
-		  _motor(P_MOTOR_PWM, P_REGEN_PWM, P_SET_REVERSE, MIN_REGEN_FIELD),
-		  _servo(P_SERVO_PWM_A, P_SERVO_PWM_B) {
+Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface &servo, int motor_interval, int steer_interval, int pub_interval)
+		: _pcommander(pcommander),
+		  _jcommander(jcommander),
+		  _motor(motor),
+		  _servo(servo) {
 
 	_motor_interval = motor_interval;
 	_steer_interval = steer_interval;
@@ -28,6 +34,10 @@ Acid::Acid(int motor_interval, int steer_interval, int pub_interval)
 
 	_commander = &_pcommander; //E this pointer allows for better control loop (switch pointer with autonomy mode, everything else stays the same)
 	_mode = 0;
+
+	_t_last_motor = millis();
+	_t_last_steer = _t_last_motor;
+	_t_last_pub = _t_last_motor;
 }
 
 /**
@@ -44,34 +54,33 @@ void Acid::prep() {
  * @brief (because I am hilarious) main control loop
  **/
 void Acid::drop() {
-	int field_cmd, motor_cmd, regen_cmd, steer_cmd;
-	unsigned long t, t_last_motor, t_last_steer, t_last_pub;
-	unsigned long dt_motor, dt_steer, dt_pub;
+
+	_t_last_motor = _t_last_steer = _t_last_pub = millis();
 
 	while (TRIPPING) {
-		t = millis(); //E current time
+		unsigned long t = millis(); //E current time
 
 		//E time periods since that actions taken
-		dt_motor = t - t_last_motor;
-		dt_steer = t - t_last_steer;
-		dt_pub = t - t_last_pub;
+		unsigned long dt_motor = t - _t_last_motor;
+		unsigned long dt_steer = t - _t_last_steer;
+		unsigned long dt_pub = t - _t_last_pub;
 
 		//E handle autonomy changes
 		setAutonomy(_commander->getMode());
 	
 		if (dt_motor > _motor_interval) { //E do some speed
 			speed();
-			t_last_motor = t;
+			_t_last_motor = t;
 		}
 
 		if (dt_steer > _steer_interval) { //E do some steer	
 			steer();
-			t_last_steer = t;
+			_t_last_steer = t;
 		}
 
 		if (dt_pub > _pub_interval) { //E do the publish thing
 			publish();
-			t_last_pub = t;
+			_t_last_pub = t;
 		}
 
 	} //E Come down
@@ -83,9 +92,9 @@ void Acid::drop() {
  * @brief gets and sends motor (speed) commands
  **/
 void Acid::speed() {
-	field_cmd = _commander->getFieldCmd();
-	motor_cmd = _commander->getMotorCmd();
-	regen_cmd = _commander->getRegenCmd();
+	int field_cmd = _commander->getFieldCmd();
+	int motor_cmd = _commander->getMotorCmd();
+	int regen_cmd = _commander->getRegenCmd();
 	_motor.handleCmds(motor_cmd, field_cmd, regen_cmd);
 }
 
@@ -94,7 +103,7 @@ void Acid::speed() {
  * @brief gets and sends servo (steering) commands
  **/
 void Acid::steer() {
-	steer_cmd = _commander->getSteeringCmd();
+	int steer_cmd = _commander->getSteeringCmd();
 	_servo.handleCmd(steer_cmd);
 }
 
