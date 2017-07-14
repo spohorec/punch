@@ -268,11 +268,11 @@ ServoInterface::ServoInterface(int p_servo_pwmA, int p_servo_pwmB, int p_servo_e
 }
 
 /**
- * @func ServoInterface::sendCmd
+ * @func ServoInterface::handleCmd
  * @brief takes angle command from commander, reads pot, adjusts with pid if enabled, and writes to servo (if enabled) 
  * @param [int] <cmd> angle command to servo (0-255)
 **/
-void ServoInterface::sendCmd(int cmd) {
+void ServoInterface::handleCmd(int cmd) {
 	//E TODO
 }
 

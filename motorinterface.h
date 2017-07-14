@@ -89,7 +89,7 @@ private:
 class ServoInterface {
 public:
 	ServoInterface(int p_servo_pwmA, int p_servo_pwmB);
-	void sendCmd(int cmd);
+	void handleCmd(int cmd);
 	void useServo(bool servo_on);
 	void usePID(bool pid_on);
 
