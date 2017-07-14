@@ -1,7 +1,7 @@
 /**
- * speedsensor.cpp
- * Electric Kool-Aid Motor Encoder Handling
- * [Ported from 5yler/gigabug/speedsensor.cpp]
+ * sensors.cpp
+ * Electric Kool-Aid Sensors
+ * [SpeedSensor adapted from 5yler/gigabug/speedsensor.cpp]
 
  * @author  Bayley Wang       <bayleyw@mit.edu>
  * @author  Chris Desnoyers   <cjdesno@mit.edu>
@@ -14,21 +14,27 @@
  * @date    2017-07-09    sarah   ported from gigabug, minor changes
  * @date    2017-07-13    sarah   adapted for Kool-Aid setup (single encoder, not quadrature)
  * @date    2017-07-13    sarah   more general RPM calc and interrupt setup, commented
+ * @date	2017-07-13	  sarah   renamed speedsensor-->sensors, added AngleSensor outline
  **/
 
-#include "speedsensor.h"
+#include "sensors.h"
 
-#define PULSES_PER_REV 600.0 //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Koolaid and put elsewhere
+#define PULSES_PER_REV 600.0 //@def //$ number of encoder pulses per full motor revolution //E! TODO Confirm this value for Kool-Aid
+
+// ----------------------------------------------------------------------------------------------
 
 volatile long encoder_ticks;  //E number of ticks recorded on the encoder
 
 /**
- * @func EncoderISR
+ * @func EncoderISR 
  * @brief Encoder Interrupt Service Routine. Increments tick counter.
 **/
 void EncoderISR() { 
 	encoder_ticks+=1;
 }
+
+// ----------------------------------------------------------------------------------------------
+
 
 /**
  * @constr SpeedSensor::SpeedSensor
@@ -87,3 +93,26 @@ long SpeedSensor::getRPM() {
 
 }
 
+// ----------------------------------------------------------------------------------------------
+
+/**
+ * @constr AngleSensor::AngleSensor
+ * @brief initializes interface and angle sensor. Servo starts disabled
+ * @param [int] <p_angle_sensor> pin connected to output of sensor
+ * @param [double] <sensor_min_v> minimum sensor voltage reading
+ * @param [double] <sensor_mid_v> mid-point (no angle) sensor voltage reading
+ * @param [double] <sensor_max_v> maximum sensor voltage reading
+**/
+AngleSensor::AngleSensor(int p_angle_sensor, double sensor_min_v, 
+		double sensor_mid_v, double sensor_max_v) {
+	//E TODO
+}
+
+/**
+ * @func AngleSensor::getAngle
+ * @brief returns angle measurement from angle sensor
+**/
+int AngleSensor::getAngle() {
+	//E TODO
+	return 0;
+}
