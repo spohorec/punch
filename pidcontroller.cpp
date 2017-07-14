@@ -21,7 +21,7 @@ PIDController::PIDController(long kp, long ki, long kd, long out_max, long out_m
   _out_min = out_min;
 }
 
-void PIDController::ResetGains(long kp, long ki, long kd) {
+void PIDController::resetGains(long kp, long ki, long kd) {
   _kp = kp;
   _ki = ki;
   _kd = kd;
@@ -29,12 +29,12 @@ void PIDController::ResetGains(long kp, long ki, long kd) {
   _integral = 0;
 }
 
-void PIDController::ResetIntegrator() {
+void PIDController::resetIntegrator() {
   _last_in = 0;
   _integral = 0;
 }
 
-int PIDController::Update(int ref, int in) {
+int PIDController::update(int ref, int in) {
   //error = desired - actual
   int error = ref - in;
 
