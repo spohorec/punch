@@ -1,12 +1,11 @@
 /** 
-	acid.cpp
-	Electric Kool-Aid Acid Test Main Control File
-	
-
-	@date 2017-07-08 creation
-
-
-
+ * acid.cpp
+ * Electric Kool-Aid Acid Test Main Control File
+ * 
+ * @author Sarah Pohorecky <spohorec@mit.edu> 
+ *
+ * @date 2017-07-08 creation
+ * @date 2017-07-14 some outlining
 **/
 
 #include "acid.h"

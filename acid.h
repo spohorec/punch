@@ -1,13 +1,14 @@
 /** 
-	acid.h
-	Electric Kool-Aid Acid Test Main Header
-	
-
-	@date 2017-07-08 creation
-	@date 2017-07-13 updates with new pinouts
-
-
+ * acid.h
+ * Electric Kool-Aid Acid Test Main Header
+ * 
+ * @author Sarah Pohorecky <spohorec@mit.edu> 
+ *
+ * @date 2017-07-08 creation
+ * @date 2017-07-13 updates with new pinouts
+ * @date 2017-07-14 some outlining
 **/
+
 
 #include <Arduino.h>
 

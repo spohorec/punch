@@ -1,11 +1,12 @@
 /**
  * pidcontroller.cpp
- * Gigatron motor control Arduino code for PID controller.
+ * Electric Kool-Aid PID controller.
+ * [adapted from 5yler/gigabug/pidcontroller.cpp]
  * 
  * @author  Bayley Wang   <bayleyw@mit.edu>
  *
  * @date    2016-01-10    syler   moved to separate .cpp file, header is in classes.h
- *
+ * @date    2017-07-09    sarah   ported from gigabug, minor changes
  **/
 
 #include <Arduino.h>
