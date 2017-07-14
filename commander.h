@@ -1,48 +1,72 @@
-/*
-commander.h
-Electric Kool-Aide Commander
+/**
+ * commander.h
+ * Electric Kool-Aide Commander
+ * 
+ * @author Sarah Pohorecky <spohorec@mit.edu>
+ * 
+ * @date 2017-07-08 	creation.
+ * @date 2017-07-13 	update with reverse handling.
+ * @date 2017-07-14 	outlined jetson commander and some additional methods
 
-	@author Sarah Pohorecky <spohorec@mit.edu>
-
-	@date 2017-07-08 creation.
-	@date 2017-07-13 update with reverse handling.
-
-*/
+**/
 
 #include <Arduino.h>
-#include "throttle.h"
+#include "sensors.h"
 
+/**
+ * @class Commander
+ * @brief super-class of commander types. Gets inputs from human or computer
+**/
 class Commander {
 public:
 	virtual int getMotorCmd();
-	virtual unsigned char getFieldCmd();
-	virtual unsigned char getSteeringCmd();
+	virtual int getFieldCmd();
+	virtual int getSteeringCmd();
+	virtual int getRegenCmd();
 	virtual bool getEstop();
+	virtual int getMode();
 
 };
 
+// ----------------------------------------------------------------------------------
 
+/**
+ * @class PhysCommander
+ * @brief commander that takes in human input
+**/
 class PhysCommander: public Commander {
 public:
-	PhysCommander(Throttle *motor_throttle, Throttle *field_throttle, int p_reverse);
+	PhysCommander(int p_reverse, int p_brake_1, int p_brake_2);
 	int getMotorCmd();
-	unsigned char getFieldCmd();
-	unsigned char getSteeringCmd();
-	int getDirection();
+	int getFieldCmd();
+	int getSteeringCmd();
+	int getRegenCmd();
 	bool getEstop();
+	int getMode();
 private:
-	Throttle *_motor_throttle, *_field_throttle;
-	int _p_reverse;
+	int getDirection();
+
+	Throttle _motor_throttle, _field_throttle;
+	
+	int _p_reverse, _p_brake_1, _p_brake_2;
 };
 
-// class JetsonCommander: public Commander {
-// public:
-// 	JetsonCommander(ros::NodeHandle *nh);
-// 	unsigned char getMotorCmd();
-// 	unsigned char getFieldCmd();
-// 	unsigned char getSteeringCmd();
-// 	bool getEstop();
+// ----------------------------------------------------------------------------------
 
-// private:
+/**
+ * @class JetsonCommander
+ * @brief commander that takes in computer input
+**/
+class JetsonCommander: public Commander {
+public:
+	JetsonCommander();
+	int getMotorCmd();
+	int getFieldCmd();
+	int getSteeringCmd();
+	int getRegenCmd();
+	bool getEstop();
+	int getMode();
 
-// };
+private:
+
+};

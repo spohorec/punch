@@ -1,42 +1,80 @@
-/*
-commander.cpp
-Electric Kool-Aide Commander
-
-	@author Sarah Pohorecky <spohorec@mit.edu>
-
-	@date 2017-07-08 creation.
-	@date 2017-07-13 update with reverse handling.
-
-*/
+/**
+ * commander.cpp
+ * Electric Kool-Aide Commander
+ * 
+ * @author Sarah Pohorecky <spohorec@mit.edu>
+ * 
+ * @date 2017-07-08 	creation.
+ * @date 2017-07-13 	update with reverse handling.
+ * @date 2017-07-14 	outlined jetson commander and some additional methods
+**/
 
 #include "commander.h"
 
-//This means that it will map input voltages between 0 and 5 volts into integer values between 0 and 1023. 
-	//This yields a resolution between readings of: 5 volts / 1024 units or, .0049 volts (4.9 mV) per unit.
 
-PhysCommander::PhysCommander(Throttle *motor_throttle, Throttle *field_throttle, int p_reverse) {
-	_motor_throttle = motor_throttle;
-	_field_throttle = field_throttle;
+/**
+ * @constr PhysCommander::PhysCommander
+ * @brief sets up throttles and control switch pins
+ * @param [int] <p_reverse> reverse switch input pin
+ * @param [int] <p_brake_1> brake 1 switch input pin
+ * @param [int] <p_brake_2> brake 2 switch input pin
+**/
+PhysCommander::PhysCommander(int p_reverse, int p_brake_1, int p_brake_2) 
+		: _motor_throttle(P_MOTOR_THROTTLE,MOTOR_THROTTLE_MIN,MOTOR_THROTTLE_MAX),
+		  _field_throttle(P_FIELD_THROTTLE,FIELD_THROTTLE_MIN,FIELD_THROTTLE_MAX) {
 
 	_p_reverse = p_reverse;
+	_p_brake_1 = p_brake_1;
+	_p_brake_2 = p_brake_2;
+
 }
 
+/**
+ * @func PhysCommander::getMotorCmd
+ * @brief gets motor command from throttle and sets its direction
+ * @returns [int] signed motor command (-255-255)
+ **/
 int PhysCommander::getMotorCmd() {
-	int cmd = _motor_throttle->getThrottle();
+	int cmd = _motor_throttle.getThrottle();
 	int direction = getDirection();
 	return cmd * direction;
 }
 
-unsigned char PhysCommander::getFieldCmd() {
-	unsigned char cmd = _field_throttle->getThrottle();
+/**
+ * @func PhysCommander::getFieldCmd
+ * @brief gets field command from throttle
+ * @returns [int] field command (0-255)
+ **/
+int PhysCommander::getFieldCmd() {
+	int cmd = _field_throttle.getThrottle();
 
 	return cmd;
 }
 
-unsigned char PhysCommander::getSteeringCmd() {
+/**
+ * @func PhysCommander::getSteeringCmd
+ * @brief no steering commands from PhysCommander, included for compatability with Commander
+ * @returns [int] always returns 0
+ **/
+int PhysCommander::getSteeringCmd() {
 	return 0;
 }
 
+/**
+ * @func PhysCommander::getRegenCmd
+ * @brief reads brake switches and gives command
+ * @returns [int] regen command (0-255)
+ **/
+int PhysCommander::getRegenCmd(){
+	//E TODO
+	return 0;
+}
+
+/**
+ * @func PRIVATE PhysCommander::getDirection
+ * @brief reads reverse pin to get direction of command
+ * @returns [int] +1 or -1 whether to go forwards or backwards
+ **/
 int PhysCommander::getDirection() {
 	if digitalRead(_p_reverse) {
 		return -1;
@@ -45,12 +83,91 @@ int PhysCommander::getDirection() {
 	}
 }
 
+/**
+ * @func PhysCommander::getEstop
+ * @brief no estop commands from PhysCommander, included for compatability with Commander
+ * @returns [bool] always returns false
+ **/
 bool PhysCommander::getEstop() {
 	return false;
 }
 
-// JetsonCommander::JetsonCommander(ros::NodeHandle *nh) {}
-// unsigned char JetsonCommander::getMotorCmd() {}
-// unsigned char JetsonCommander::getFieldCmd() {}
-// int JetsonCommander::getSteeringCmd() {}
-// int JetsonCommander::getEstop() {}
+/**
+ * @func PhysCommander::getMode
+ * @brief gets whether autonomous enable switch is set or not
+ * @returns [int] mode 0 if human driven, 1 if autonomous
+ **/
+int PhysCommander::getMode(){
+	//E TODO
+	return 0;
+}
+
+// ----------------------------------------------------------------------------------
+
+/**
+ * @constr JetsonCommander::JetsonCommander
+ * @brief init. JetsonCommander (TODO)
+**/
+JetsonCommander::JetsonCommander() {
+	//E! TODO
+}
+
+/**
+ * @func JetsonCommander::getMotorCmd
+ * @brief gets signed motor command from jetson
+ * @returns [int] signed motor command (-255-255)
+ **/
+int JetsonCommander::getMotorCmd() {
+	//E! TODO
+	return 0;
+}
+
+/**
+ * @func JetsonCommander::getFieldCmd
+ * @brief gets signed motor command from jetson
+ * @returns [int] field command (0-255)
+ **/
+int JetsonCommander::getFieldCmd() {
+	//E! TODO
+	return 0;
+}
+
+/**
+ * @func JetsonCommander::getSteeringCmd
+ * @brief gets steering command from jetson
+ * @returns [int] signed steering command (-255-255)
+ **/
+int JetsonCommander::getSteeringCmd() {
+	//E! TODO
+	return 0;
+}
+
+/**
+ * @func JetsonCommander::getRegenCmd
+ * @brief gets regen command from jetson
+ * @returns [int] regen command (0-255)
+ **/
+int getRegenCmd() {
+	//E! TODO
+	return 0;
+}
+
+/**
+ * @func JetsonCommander::getEstop
+ * @brief gets estop command from jetson
+ * @returns [bool] true if estopped
+ **/
+bool JetsonCommander::getEstop() {
+	//E! TODO
+	return false;
+}
+
+/**
+ * @func JetsonCommander::getMode
+ * @brief gets mode command from jetson
+ * @returns [int] mode 0 if human driven, 1 if autonomous
+ **/
+int JetsonCommander::getMode() {
+	//E! TODO
+	return 0;
+}
