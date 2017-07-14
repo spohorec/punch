@@ -15,6 +15,7 @@
  * @date    2017-07-13    sarah   adapted for Kool-Aid setup (single encoder, not quadrature)
  * @date    2017-07-13    sarah   more general RPM calc and interrupt setup, commented
  * @date	2017-07-13	  sarah   renamed speedsensor-->sensors, added AngleSensor outline
+ * @date	2017-07-13 	  sarah   moved Throttle and Thermistor defs, minor type/name updates and doc
  **/
 
 #include "sensors.h"
@@ -111,8 +112,89 @@ AngleSensor::AngleSensor(int p_angle_sensor, double sensor_min_v,
 /**
  * @func AngleSensor::getAngle
  * @brief returns angle measurement from angle sensor
+ * @returns [int] angle measurement from sensor
 **/
 int AngleSensor::getAngle() {
 	//E TODO
 	return 0;
+}
+
+// ----------------------------------------------------------------------------------------------
+
+/**
+ * @constr Throttle::Throttle
+ * @brief initializes throttle, sets throttle limits
+ * @param [int] <p_throttle> pin connected to output of throttle
+ * @param [double] <throttle_min_v> minimum throttle voltage reading
+ * @param [double] <throttle_max_v> maximum throttle voltage reading
+**/
+Throttle::Throttle(int p_throttle, double throttle_min_v, double throttle_max_v) {
+	_p_throttle = p_throttle;
+	_throttle_min = (int) (throttle_min_v / 5.0 * 1023); 
+	_throttle_max = (int) (throttle_max_v / 5.0 * 1023);
+}
+
+/**
+ * @func Throttle::getThrottle
+ * @brief returns scaled throttle measurement
+ * @returns [unsigned char] scaled throttle reading (0-255)
+**/
+unsigned char Throttle::getThrottle() {
+	int raw_throttle = getRawThrottle();
+
+	//E scales the throttle to an input between 0 and 255
+	int scaled_throttle = (int) (double((raw_throttle - _throttle_min)) / (_throttle_max - _throttle_min) * 255.0);
+
+	if (scaled_throttle > 255) scaled_throttle = 255;
+	if (scaled_throttle < 0) scaled_throttle = 0;
+
+	return (unsigned char) scaled_throttle;
+}
+
+/**
+ * @func Throttle::getRawThrottle
+ * @brief returns unscaled throttle measurement
+ * @returns [int] unscaled throttle reading (0-1023)
+**/
+int Throttle::getRawThrottle() {
+	return analogRead(_p_throttle);
+}
+
+// ----------------------------------------------------------------------------------------------
+
+/*
+ * @constr Thermistor::Thermistor
+ * @brief initializes conversion params and calculates R_infinity for temperature approximation function
+ * @param [int] <p_thermistor> pin in center of voltage divider w/ thermistor to ground
+ * @param [double] <reference_res> reference resistance (resistance of other resistor in divider)
+ * @param [double] <T0> reference temperature (room temperature)
+ * @param [double] <R0> reference resistance (resistance at room temperature)
+ * @param [double] <B> thermistor B parameter
+**/
+Thermistor::Thermistor(int p_thermistor, double reference_res, double T0, double R0, double B){
+	_p_thermistor = p_thermistor;
+
+	_reference_res = reference_res;
+
+	_T0 = T0;
+	_R0 = R0;
+	_B = B;
+
+	_rInf = _R0 * exp((-_B / _T0)); // See <https://en.wikipedia.org/wiki/Thermistor#B_or_.CE.B2_parameter_equation> for equation info
+
+}
+
+/*
+ * @func Thermistor::getTemperature
+ * @brief reads voltage on thermistor divider pin and calculates its resistance, then approximates its temperature using B-parameter equation
+ * @returns [double] approximated temperature of the motor
+**/
+double Thermistor::getTemperature(){
+	double voltage = analogRead(_p_thermistor)/1023.0 * 5.0; //E! TODO this could totally be a helper function since I use it so much...
+	double res = (voltage * _reference_res) / (5.0 - voltage); //E thermistor is in resistor divider with reference resistance 
+																//E 5V--->[reference]--->(pin connected here)--->[therm]--->GND
+
+	double temp = _B / log(res / _rInf);
+
+	return temp;
 }

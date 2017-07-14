@@ -7,10 +7,11 @@
  * @author 	Syler Wagner 		<syler@mit.edu>
  * @author  Sarah Pohorecky   	<spohorec@mit.edu>
 
- * @date    2016-01-10	syler   refactored header files
- * @date    2017-07-09	sarah   ported from gigabug, minor changes
+ * @date  2016-01-10	syler   refactored header files
+ * @date  2017-07-09	sarah   ported from gigabug, minor changes
  * @date	2017-07-13	sarah 	more general RPM calc and interrupt setup, commented
  * @date	2017-07-13	sarah 	renamed speedsensor-->sensors, added AngleSensor outline
+ * @date  2017-07-13  sarah   moved Throttle and Thermistor defs, minor type/name updates and doc
  **/
 
 #include <Arduino.h>
@@ -54,4 +55,35 @@ private:
 	int _p_angle_sensor;
 	int _sensor_min, _sensor_mid, _sensor_max;
 
+};
+
+// ----------------------------------------------------------------------------------------------
+
+/**
+ * @class Throttle
+ * @brief reads throttle input and scales range
+**/
+class Throttle {
+public:
+  Throttle(int p_throttle, double throttle_min_v, double throttle_max_v);
+  unsigned char getThrottle();
+  int getRawThrottle();
+private:
+  int _p_throttle;
+  int _throttle_min, _throttle_max;
+};
+
+// ----------------------------------------------------------------------------------------------
+
+/**
+ * @class Thermistor
+ * @brief handles readings from thermistor and converts them into mesaured temperature
+**/
+class Thermistor {
+public:
+  Thermistor(int p_thermistor, double T0, double R0, double B);
+  double getTemperature();
+private:
+  int _p_thermistor;
+  double _T0, _R0, _B, _rInf;
 };
