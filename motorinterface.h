@@ -7,7 +7,7 @@
 * 	@date 2017-07-08 creation.
 * 	@date 2017-07-13 update with reverse handling.
 * 	@date 2017-07-13 refactor, hopefully more reasonably?
-* 
+*	@date 2017-07-13 added ServoInterface outline
 **/
 
 
@@ -31,7 +31,6 @@ private:
 	void handleMotor();
 
 	void setReverseOn(bool reverse_on);
-
 
 	PIDController _motor_pid;
 	SpeedSensor _speed_sensor;
@@ -78,5 +77,28 @@ private:
 	double _temperature, _overheat_temperature;
 	int _p_temp_indicator;
 
+
+};
+
+// ----------------------------------------------------------------------------------
+
+/**
+ * @class ServoInterface
+ * @brief interface with servo and angle sensor
+**/
+class ServoInterface {
+public:
+	ServoInterface(int p_servo_pwmA, int p_servo_pwmB);
+	void sendCmd(int cmd);
+	void useServo(bool servo_on);
+	void usePID(bool pid_on);
+
+private:
+	AngleSensor _servo_pot;
+
+	int _p_servo_pwmA, _p_servo_pwmB, _p_servo_enable;
+
+	bool _servo_on;
+	int _last_angle, _last_angle_command, _last_angle_input;
 
 };

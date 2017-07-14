@@ -7,6 +7,7 @@
  * 	@date 2017-07-08 creation.
  * 	@date 2017-07-13 update with reverse handling.
  * 	@date 2017-07-13 refactor, hopefully more reasonably?
+ *	@date 2017-07-13 added ServoInterface outline.
  * 
 **/
 
@@ -240,3 +241,60 @@ void FieldInterface::checkOverheat() {
 }
 
 // ----------------------------------------------------------------------------------
+
+/**
+ * @constr ServoInterface::ServoInterface
+ * @brief initializes interface and angle sensor. Servo starts disabled
+ * @param [int] <p_servo_pwmA> pin connected to PWM A input of MegaMoto Controller
+ * @param [int] <p_servo_pwmB> pin connected to PWM B input of MegaMoto Controller
+ * @param [int] <p_servo_enable> pin connected to enable input of MegaMoto Controller
+**/
+ServoInterface::ServoInterface(int p_servo_pwmA, int p_servo_pwmB, int p_servo_enable)
+		: _servo_pot(P_SERVO_POT,SERVO_POT_MIN,SERVO_POT_MID,SERVO_POT_MAX),
+		  _servo_pid(KP_SERVO,KI_SERVO,KD_SERVO,255,-255) {
+	_p_servo_pwmA = p_servo_pwmA;
+	_p_servo_pwmB = p_servo_pwmB;
+	_p_servo_enable = p_servo_enable;
+
+	_last_angle_command = 0;
+	_last_angle_input = 0;
+
+	_last_angle = 0;
+
+	_servo_on = false;
+	_pid_on = false;
+
+	//E! TODO Initialize pins
+}
+
+/**
+ * @func ServoInterface::sendCmd
+ * @brief takes angle command from commander, reads pot, adjusts with pid if enabled, and writes to servo (if enabled) 
+ * @param [int] <cmd> angle command to servo (0-255)
+**/
+void ServoInterface::sendCmd(int cmd) {
+	//E TODO
+}
+
+/**
+ * @func MotorInterface::useServo
+ * @brief enables or disables servo input (since servo should not be enabled when a human is driving)
+ * @param [bool] <servo_on> whether servo should be enabled (true) or disabled (false)
+**/
+void ServoInterface::useServo(bool servo_on) {
+	//E TODO
+}
+
+/**
+ * @func ServoInterface::usePID
+ * @brief turns PID controller on or off for servo. Resets integrator when re-enabled
+ * @param [bool] <pid_on> whether pid should be on (true) or off (false)
+**/
+void ServoInterface::usePID(bool pid_on) {
+	if (pid_on) {
+		_pid_on = true;
+		_servo_pid.resetIntegrator(); //E reset integrator to prevent weirdness
+	} else {
+		_pid_on = false;
+	}
+}
