@@ -1,48 +1,151 @@
-/*
-motorinterface.cpp
-Electric Kool-Aide Motor Controller-Controller
-
-	@author Sarah Pohorecky <spohorec@mit.edu>
-
-	@date 2017-07-08 creation.
-	@date 2017-07-13 update with reverse handling.
-
-*/
+/**
+ * motorinterface.cpp
+ * Electric Kool-Aide Motor Controller-Controllers
+ * 
+ * 	@author Sarah Pohorecky <spohorec@mit.edu>
+ * 
+ * 	@date 2017-07-08 creation.
+ * 	@date 2017-07-13 update with reverse handling.
+ * 	@date 2017-07-13 refactor, hopefully more reasonably?
+ * 
+**/
 
 #include "motorinterface.h"
 
-MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch ) {
+/**
+ * @constr MotorInterface::MotorInterface
+ * @brief initializes settings, sensors, and readings for motor.
+ * @param [int] <p_motor_pwm> pin tied to input to motor controller
+ * @param [int] <p_regen_pwm> pin tied to input to field controller
+ * @param [int] <p_reverse_switch> pin tied to Kelly KEB reverse switch
+ * @param [int] <regen_min_field> minimum field inp needed for regen to function
+**/
+MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field):
+		_speed_sensor(ENCODER_INTERRUPT),
+		_motor_pid(KP_MOTOR,KI_MOTOR,KD_MOTOR,255,-255),
+		_field(5.0,9.0,12.0,30,80,80.0,P_TEMP_INDICATOR) {
+
 	_p_motor_pwm = p_motor_pwm;
 	_p_regen_pwm = p_regen_pwm;
 
 	_p_reverse_switch = p_reverse_switch;
+	pinMode(_p_reverse_switch,INPUT); //E Kelly switches are ON when GROUNDED. This makes switch floating (off)
+
+	_regen_min_field = regen_min_field;
 
 	_reverse_on = false;
 	_regen_on = false;
+	_pid_on = false;
+
+	_last_motor_cmd = 0; //E last commands sent to interface by commander
+	_last_field_cmd = 0;
+	_last_regen_cmd = 0;
+
+	_last_motor_input = 0; //E last actual inputs interface sent to motors (may differ from commands)
+	_last_field_input = 0;
+	_last_regen_input = 0;
+
+	_last_rpm = 0; //E last RPM reading from _speed_sensor
 }
 
-void MotorInterface::sendCmd(unsigned char cmd) {
-	if (cmd < 0) {
+/**
+ * @func MotorInterface::handleCmds
+ * @brief takes in commands from commander, runs handling routines.
+ * @param [int] <motor_cmd> command to main motor (0-255)
+ * @param [int] <field_cmd> command to field controller (0-255)
+ * @param [int] <regen_cmd> command to regen (0-255)
+**/
+void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
+	_last_motor_cmd = motor_cmd;
+	_last_field_cmd = field_cmd;
+	_last_regen_cmd = regen_cmd;
+
+	_last_rpm = _speed_sensor.getRPM();
+
+	handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs
+	handleRegen(); 
+	handleMotor();
+}
+
+/**
+ * @func PRIVATE MotorInterface::handleField
+ * @brief increases field if needed for regen, calls adjustment on field limits, sends field command to field_interface
+**/
+void MotorInterface::handleField() {
+	int field_input = _last_field_cmd;
+
+	if (_last_regen_cmd > 0 && field_input < _regen_min_field) { //E increase field voltage if too low for regen
+		field_input = _regen_min_field;
+	}
+
+	_field.setMaxVoltage(_last_rpm); //E command field_interface to set speed-based voltage limits
+
+	if (field_input > 255) field_input = 255; //E check range
+	if (field_input < 0 ) field_input = 0;
+
+	_field.sendCmd(field_input);
+	_last_field_input = field_cmd;
+}
+
+/**
+ * @func PRIVATE MotorInterface::handleRegen
+ * @brief gets regen command, verifies range, and writes command
+**/
+void MotorInterface::handleRegen() {
+	int regen_input = _last_regen_cmd;
+
+	if (regen_input > 255) regen_input = 255; //E check range
+	if (regen_input < 0) regen_input = 0;
+
+	analogWrite(_p_regen_pwm,regen_input);
+	_last_regen_input = regen_input;
+}
+
+/**
+ * @func PRIVATE MotorInterface::handleMotor
+ * @brief gets motor command, handles direction, calls PID if enabled, writes command
+**/
+void MotorInterface::handleMotor() {
+	int motor_input = _last_motor_cmd;
+
+	//E check direction
+	if (motor_input < 0) {
 		setReverseOn(true);
+		motor_input = abs(motor_input); //E can only write pos speed to motor
 	} else {
 		setReverseOn(false);
 	}
+	
+	if (_pid_on) { //E use PID controller if enabled
+		motor_input = _motor_pid.update(motor_input,_last_rpm);
+	}
 
-	int duty = abs(cmd);
-	if (duty > 255) duty = 255;
-	if (duty < 0) duty = 0;
+	if (motor_input > 255) motor_input = 255; //E check range
+	if (motor_input < 0) motor_input = 0;
 
-	analogWrite(_p_motor_pwm,duty);
+	analogWrite(_p_motor_pwm,motor_input);
+	_last_motor_input = motor_input;
 }
 
-void MotorInterface::sendRegenCmd(unsigned char cmd) {
-	int duty = cmd;
-	if (duty > 255) duty = 255;
-	if (duty < 0) duty = 0;
-	analogWrite(_p_regen_pwm,duty);
+/**
+ * @func MotorInterface::usePID
+ * @brief turns PID controller on or off for motor. Resets integrator when re-enabled
+ * @param [bool] <pid_on> whether pid should be on (true) or off (false)
+**/
+void MotorInterface::usePID(bool pid_on) {
+	if (pid_on) {
+		_pid_on = true;
+		_motor_pid.resetIntegrator(); //E reset integrator to prevent weirdness
+	} else {
+		_pid_on = false;
+	}
 }
 
-
+/**
+ * @func PRIVATE MotorInterface::setReverseOn
+ * @brief writes to kelly switch that controls motor directionality
+ * @param [bool] <reverse_on> whether reverse is on (true) or off (false)
+**/
 void MotorInterface::setReverseOn(bool reverse_on) {
 	if 	(_reverse_on != reverse_on) { //E don't bother changing pin modes if we are still going in the same direction
 		if (reverse_on) {
@@ -57,14 +160,47 @@ void MotorInterface::setReverseOn(bool reverse_on) {
 
 // ----------------------------------------------------------------------------------
 
-FieldInterface::FieldInterface(float min_field_v, float max_field_v) {
-	_min_field_v = min_field_v;
-	_max_field_v = max_field_v;
+/**
+ * @constr FieldInterface::FieldInterface
+ * @brief initializes settings, sensors, and readings for field controller.
+ * @param [double] <min_v> minimum voltage of field
+ * @param [double] <slow_max_v> maximum voltage of field at low speed
+ * @param [double] <fast_max_v> maximum voltage of field at high speed
+ * @param [long] <rpm_lower_limit> rpm below which max_field_v should be set to slow_max_v 
+ * @param [long] <rpm_upper_limit> rpm above which max_field_v should be set to fast_max_v 
+ * @param [double] <overheat_temperature> temperature at which to set temperature warning indicator
+ * @param [int] <p_temp_indicator> pin attached to input of temperature warning indicator 
+**/
+FieldInterface::FieldInterface(double min_v, 
+	double slow_max_v, double fast_max_v, 
+	long rpm_lower_limit, long rpm_upper_limit, 
+	double overheat_temperature, int p_temp_indicator)
+	 : _thermistor(P_THERMISTOR,THERM_T0,THERM_R0,THERM_B) {
+
+	_slow_max_v = slow_max_v;
+	_fast_max_v = fast_max_v;
+
+	_min_v = min_v;
+	_max_v = _slow_max_v;
+
+	_rpm_lower_limit = rpm_lower_limit;
+	_rpm_upper_limit = rpm_upper_limit;
+
+	_temperature = 0;
+	_overheat_temperature = overheat_temperature;
+	_p_temp_indicator = p_temp_indicator;
 
 }
 
-void FieldInterface::sendCmd(unsigned char cmd) {
-	double v_desired = ((float) cmd / 255) * (_max_field_v - _min_field_v) + _min_field_v;
+/**
+ * @func FieldInterface::sendCmd
+ * @brief takes cmd (interpreted as % max_field_voltage), calculates PWM and writes fast PWM
+ * @param [int] <cmd> (0-255) desired % max field voltage
+**/
+void FieldInterface::sendCmd(int cmd) {
+	checkOverheat(); //E check for overheating
+
+	double v_desired = ((float) cmd / 255) * (_max_v - _min_v) + _min_v;
 	double duty = v_desired / V_BATTERY_MAX;
 	int reg_value = floor(duty*256) - 1; //E duty cycle of PWM is given by (reg_value + 1)/256
 
@@ -76,8 +212,31 @@ void FieldInterface::sendCmd(unsigned char cmd) {
 
 }
 
-void FieldInterface::getMaxVoltage() {
-	//E do nothing right now
+/**
+ * @func FieldInterface::setMaxVoltage
+ * @brief takes rpm of motor and sets speed-based field voltage limits
+ * @param [int] <motor_rpm> rpm of motor
+**/
+void FieldInterface::setMaxVoltage(int motor_rpm) {
+	if (motor_rpm <= _rpm_lower_limit) {
+		_max_v = _slow_max_v;
+	} else if (motor_rpm >= _rpm_upper_limit) {
+		_max_v = _fast_max_v;
+	}
+}
+
+/**
+ * @func PRIVATE FieldInterface::checkOverheat
+ * @brief reads temperature from thermistor and sets warning indicator if applicable
+**/
+void FieldInterface::checkOverheat() {
+	_temperature = _thermistor.getTemperature();
+
+	if (_temperature >= _overheat_temperature) {
+		digitalWrite(_p_temp_indicator,HIGH);
+	} else {
+		digitalWrite(_p_temp_indicator,LOW);
+	}
 }
 
 // ----------------------------------------------------------------------------------
