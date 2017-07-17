@@ -63,6 +63,7 @@ public:
 	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field, FieldInterface& field, PIDController& motor_pid, SpeedSensor& encoder);
 	void handleCmds(int motor_cmd, int field_cmd, int regen_cmd);
 	void usePID(bool pid_on);
+	void getLastInps();
 private:
 	void handleField();
 	void handleRegen();

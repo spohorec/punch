@@ -50,6 +50,7 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
 	_last_regen_input = 0;
 
 	_last_rpm = 0; //E last RPM reading from _encoder
+
 }
 
 /**
@@ -69,6 +70,10 @@ void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
 	handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs
 	handleRegen(); 
 	handleMotor();
+}
+
+std::array<int,3> MotorInterface::getLastInps(){
+	return {_last_motor_input, _last_field_input, _last_regen_input};
 }
 
 /**
