@@ -38,6 +38,7 @@ Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterfac
 	_t_last_motor = millis();
 	_t_last_steer = _t_last_motor;
 	_t_last_pub = _t_last_motor;
+
 }
 
 /**
@@ -137,5 +138,27 @@ void Acid::setAutonomy(int mode) {
 		} else if (mode == 1) { //E autonomous mode
 			//E do some things at some point!
 		}
+	}
+}
+
+/**
+ * @func Acid::test
+ * @brief random test code
+ **/
+void Acid::test() {
+	while (TRIPPING) {
+		int field_cmd = _commander->getFieldCmd();
+		int motor_cmd = abs(_commander->getMotorCmd());
+		// Serial.print("\t\t\t\t");
+		// Serial.println(motor_cmd);
+		_motor.handleCmds(motor_cmd,field_cmd,0);
+
+		// _motor.logLastInps();
+	// if (Serial.available() > 0) {
+	// 	_last_test_inp = (int) Serial.parseInt();
+	// 	Serial.println("got inp");
+	// }
+	// _motor.handleCmds(0,_last_test_inp,0);
+	// Serial.println(_last_test_inp);
 	}
 }

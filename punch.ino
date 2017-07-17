@@ -64,6 +64,7 @@ void setup(){
 
 	acid.drop();
 
+	// acid.test();
 }
 
 
