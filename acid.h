@@ -34,8 +34,8 @@
 //E Motor parameters	
 #define P_MOTOR_PWM 9 ///@def Kelly motor command output pin
 #define P_MOTOR_THROTTLE A0 //@def Motor throttle input pin
-#define MOTOR_THROTTLE_MIN_V 0.85 //@def Motor throttle min voltage 
-#define MOTOR_THROTTLE_MAX_V 4.35 //@def Motor throttle max voltage
+#define MOTOR_THROTTLE_MIN_V 0.81 //E Updated after adding pulldown resistor //0.85 //@def Motor throttle min voltage 
+#define MOTOR_THROTTLE_MAX_V 4.23 //E Updated after adding pulldown resistor //4.35 //@def Motor throttle max voltage
 
 //E Encoder parameters
 #define P_ENCODER 2 //@def Encoder input pin
@@ -45,8 +45,8 @@
 //E Field parameters
 #define P_FIELD_PWM 11 //@def Field driver command output pin
 #define P_FIELD_THROTTLE A1 //@def Field Throttle input pin
-#define FIELD_THROTTLE_MIN_V 0.85 //@def Field throttle min voltage
-#define FIELD_THROTTLE_MAX_V 4.35 //@def Field throttle max voltage
+#define FIELD_THROTTLE_MIN_V 0.81 //E Updated after adding pulldown resistor //0.85 //@def Field throttle min voltage
+#define FIELD_THROTTLE_MAX_V 4.23 //E Updated after adding pulldown resistor //4.35 //@def Field throttle max voltage
 
 #define FIELD_MIN_V 5.0 //@def Minimum field voltage with 0% input
 #define FIELD_SLOW_MAX_V 12.0 //@def Maximum field voltage with 100% input at low speed
@@ -89,9 +89,12 @@
 #define KD_SERVO 1 //@def Motor PID differential gain //E! TODO
 
 //E Control parameters
-#define MOTOR_LOOP 10
-#define STEER_LOOP 10
-#define PUB_LOOP 10
+#define MOTOR_LOOP 10 //@def [ms] period of motor loop
+#define STEER_LOOP 10 //@def [ms] period of steering loop
+#define PUB_LOOP 10 //@def [ms] period of publishing loop
+
+
+#define lg(var) Serial.print(#var);Serial.print(": ");Serial.println(var)
 
 /**
  * @class Acid
@@ -102,6 +105,7 @@ public:
 	Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface& servo, int motor_interval, int steer_interval, int pub_interval);
 	void prep();
 	void drop();
+	void test();
 private:
 	void speed();
 	void steer();
