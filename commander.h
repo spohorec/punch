@@ -41,7 +41,7 @@ public:
 **/
 class PhysCommander: public Commander {
 public:
-	PhysCommander(int p_reverse, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle);
+	PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle);
 	int getMotorCmd();
 	int getFieldCmd();
 	int getSteeringCmd();
@@ -53,7 +53,7 @@ private:
 
 	Throttle& _motor_throttle, _field_throttle;
 	
-	int _p_reverse, _p_brake_1, _p_brake_2;
+	int _p_reverse, _p_mode, _p_brake_1, _p_brake_2;
 };
 
 // ----------------------------------------------------------------------------------

@@ -20,13 +20,20 @@
  * @param [int] <p_brake_1> brake 1 switch input pin
  * @param [int] <p_brake_2> brake 2 switch input pin
 **/
-PhysCommander::PhysCommander(int p_reverse, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle) 
+PhysCommander::PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle) 
 		: _motor_throttle(motor_throttle),
 		  _field_throttle(field_throttle) {
 
 	_p_reverse = p_reverse;
+	_p_mode = p_mode;
 	_p_brake_1 = p_brake_1;
 	_p_brake_2 = p_brake_2;
+
+	//E set pinModes
+	pinMode(_p_reverse,INPUT_PULLUP); //E switches connected to ground, so require pullup resistors
+	pinMode(_p_mode,INPUT_PULLUP);
+	pinMode(_p_brake_1,INPUT_PULLUP);
+	pinMode(_p_brake_2,INPUT_PULLUP);
 
 }
 
@@ -58,7 +65,7 @@ int PhysCommander::getFieldCmd() {
  * @returns [int] always returns 0
  **/
 int PhysCommander::getSteeringCmd() {
-	return 0;
+	return 0; //E! TODO return 0 or centered command?
 }
 
 /**
@@ -68,7 +75,15 @@ int PhysCommander::getSteeringCmd() {
  **/
 int PhysCommander::getRegenCmd(){
 	//E TODO
-	return 0;
+	if ! digitalRead(_p_brake_1) && ! digitalRead(_p_brake_2) { //E both switches pressed
+		cmd = 255;
+	}
+	else if ! digitalRead(_p_brake_1) || ! digitalRead(_p_brake_2) { //E one switch pressed
+		cmd = 127;
+	} else {
+		cmd = 0;
+	}
+	return cmd;
 }
 
 /**
@@ -77,10 +92,10 @@ int PhysCommander::getRegenCmd(){
  * @returns [int] +1 or -1 whether to go forwards or backwards
  **/
 int PhysCommander::getDirection() {
-	if (digitalRead(_p_reverse)) {
-		return -1;
-	} else {
+	if (digitalRead(_p_reverse)) { //E sign reversed since pin uses pulldown resistor
 		return 1;
+	} else {
+		return -1;
 	}
 }
 
@@ -95,12 +110,15 @@ bool PhysCommander::getEstop() {
 
 /**
  * @func PhysCommander::getMode
- * @brief gets whether autonomous enable switch is set or not
+ * @brief gets whether autonomous enable switch is set or not. Will not do anything unless also enabled from JetsonCommander.
  * @returns [int] mode 0 if human driven, 1 if autonomous
  **/
 int PhysCommander::getMode(){
-	//E TODO
-	return 0;
+	if (digitalRead(_p_mode)) {
+		return 0;
+	} else {
+		return 1; //E switch closed if groudned (pulldown)
+	}
 }
 
 // ----------------------------------------------------------------------------------
