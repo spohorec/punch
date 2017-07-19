@@ -22,6 +22,7 @@
  * @param [int] <steer_interval> steer-control loop interval
  * @param [int] <pub_interval> ROS publishing loop interval
 **/
+ 
 Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface &servo, int motor_interval, int steer_interval, int pub_interval)
 		: _pcommander(pcommander),
 		  _jcommander(jcommander),
@@ -67,13 +68,13 @@ void Acid::drop() {
 		unsigned long dt_pub = t - _t_last_pub;
 
 		//E handle autonomy changes
-		setAutonomy(_commander->getMode());
+		// setAutonomy(_commander->getMode()); //E Disabled for Detroit TODO have use_autonomy be a parameter?
 	
 		if (dt_motor > _motor_interval) { //E do some speed
 			speed();
 			_t_last_motor = t;
 		}
-
+		
 		if (dt_steer > _steer_interval) { //E do some steer	
 			steer();
 			_t_last_steer = t;
@@ -96,6 +97,7 @@ void Acid::speed() {
 	int field_cmd = _commander->getFieldCmd();
 	int motor_cmd = _commander->getMotorCmd();
 	int regen_cmd = _commander->getRegenCmd();
+	lg3(motor_cmd,field_cmd,regen_cmd);
 	_motor.handleCmds(motor_cmd, field_cmd, regen_cmd);
 }
 

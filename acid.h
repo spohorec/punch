@@ -95,6 +95,7 @@
 
 
 #define lg(var) Serial.print(#var);Serial.print(": ");Serial.println(var)
+#define lg3(var1,var2,var3) Serial.print(#var1);Serial.print(": ");Serial.print(var1);Serial.print("\t");Serial.print(#var2);Serial.print(": ");Serial.print(var2);Serial.print("\t");Serial.print(#var3);Serial.print(": ");Serial.println(var3)
 
 /**
  * @class Acid
