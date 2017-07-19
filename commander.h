@@ -7,7 +7,8 @@
  * @date 2017-07-08 	creation.
  * @date 2017-07-13 	update with reverse handling.
  * @date 2017-07-14 	outlined jetson commander and some additional methods
- * @date 2017-07-14 refactored with references. Bug fixing. Added header guards.
+ * @date 2017-07-14 	refactored with references. Bug fixing. Added header guards.
+ * @date 2017-07-17		Implemented getRegenCmd, fixed pinmodes.
 **/
 
 #ifndef __COMMANDER_H

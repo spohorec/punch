@@ -35,6 +35,7 @@ public:
 		double overheat_temperature, int p_temp_indicator, Thermistor& thermistor); //E! what should min actually be?
 	void sendCmd(int cmd);
 	void setMaxVoltage(int motor_rpm);
+	int getLastFieldInput();
 
 private:
 	void checkOverheat();
@@ -48,6 +49,8 @@ private:
 
 	double _temperature, _overheat_temperature;
 	int _p_temp_indicator;
+
+	int _last_field_input;
 
 };
 
@@ -63,7 +66,11 @@ public:
 	MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field, FieldInterface& field, PIDController& motor_pid, SpeedSensor& encoder);
 	void handleCmds(int motor_cmd, int field_cmd, int regen_cmd);
 	void usePID(bool pid_on);
-	void getLastInps();
+	
+	int getLastMotorInput();	
+	int getLastFieldInput();	
+	int getLastRegenInput();
+	int getLastRPM();	
 private:
 	void handleField();
 	void handleRegen();
@@ -77,12 +84,12 @@ private:
 
 	int _p_motor_pwm, _p_regen_pwm;
 	int _p_reverse_switch;
-	bool _regen_on, _reverse_on, _pid_on;
+	bool _reverse_on, _pid_on;
 
 	int _regen_min_field;
 
 	int _last_motor_cmd, _last_field_cmd, _last_regen_cmd;
-	int _last_motor_input, _last_field_input, _last_regen_input;
+	int _last_motor_input, _last_regen_input;
 
 	long _last_rpm;
 

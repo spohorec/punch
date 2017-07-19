@@ -9,6 +9,7 @@
  * 	@date 2017-07-13 refactor, hopefully more reasonably?
  *	@date 2017-07-13 added ServoInterface outline.
  *  @date 2017-07-14 refactored with references. Bug fixing.
+ *	@date 2017-07-17 added getter for last inputs
 **/
 
 #include "motorinterface.h"
@@ -38,7 +39,6 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
 	_regen_min_field = regen_min_field;
 
 	_reverse_on = false;
-	_regen_on = false;
 	_pid_on = false;
 
 	_last_motor_cmd = 0; //E last commands sent to interface by commander
@@ -46,7 +46,6 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
 	_last_regen_cmd = 0;
 
 	_last_motor_input = 0; //E last actual inputs interface sent to motors (may differ from commands)
-	_last_field_input = 0;
 	_last_regen_input = 0;
 
 	_last_rpm = 0; //E last RPM reading from _encoder
@@ -72,10 +71,6 @@ void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
 	handleMotor();
 }
 
-std::array<int,3> MotorInterface::getLastInps(){
-	return {_last_motor_input, _last_field_input, _last_regen_input};
-}
-
 /**
  * @func PRIVATE MotorInterface::handleField
  * @brief increases field if needed for regen, calls adjustment on field limits, sends field command to field_interface
@@ -93,7 +88,6 @@ void MotorInterface::handleField() {
 	if (field_input < 0 ) field_input = 0;
 
 	_field.sendCmd(field_input);
-	_last_field_input = field_input;
 }
 
 /**
@@ -116,12 +110,12 @@ void MotorInterface::handleRegen() {
 **/
 void MotorInterface::handleMotor() {
 	int motor_input = _last_motor_cmd;
-
+	
 	//E check direction
 	if (motor_input < 0) {
 		setReverseOn(true);
 		motor_input = abs(motor_input); //E can only write pos speed to motor
-	} else {
+	} else if (motor_input > 0) {
 		setReverseOn(false);
 	}
 	
@@ -167,6 +161,42 @@ void MotorInterface::setReverseOn(bool reverse_on) {
 	} 
 }
 
+/**
+ * @func MotorInterface::getLastMotorInput
+ * @brief returns last motor input
+ * @returns [int] last motor input
+**/
+int MotorInterface::getLastMotorInput() {
+	return _last_motor_input;
+}
+
+/**
+ * @func MotorInterface::getLastFieldInput
+ * @brief returns last field input
+ * @returns [int] last field input
+**/
+int MotorInterface::getLastFieldInput() {
+	return _field.getLastFieldInput();
+}
+
+/**
+ * @func MotorInterface::getLastRegenInput
+ * @brief returns last regen input
+ * @returns [int] last regen input
+**/
+int MotorInterface::getLastRegenInput() {
+	return _last_regen_input;
+}
+
+/**
+ * @func MotorInterface::getLastRPM
+ * @brief returns last measured rpm
+ * @returns [int] last measured rpm
+**/
+int MotorInterface::getLastRPM() {
+	return _last_rpm;
+}
+
 // ----------------------------------------------------------------------------------
 
 /**
@@ -200,6 +230,8 @@ FieldInterface::FieldInterface(double min_v,
 	_overheat_temperature = overheat_temperature;
 	_p_temp_indicator = p_temp_indicator;
 
+	_last_field_input = 0;
+
 }
 
 /**
@@ -220,6 +252,12 @@ void FieldInterface::sendCmd(int cmd) {
 	//E write reg value
 	OCR2A = reg_value; //E! This needs to be changed if arduino platform is switched
 
+	_last_field_input = reg_value;
+
+}
+
+int FieldInterface::getLastFieldInput() {
+	return _last_field_input;
 }
 
 /**
@@ -238,7 +276,7 @@ void FieldInterface::setMaxVoltage(int motor_rpm) {
 /**
  * @func PRIVATE FieldInterface::checkOverheat
  * @brief reads temperature from thermistor and sets warning indicator if applicable
-**/
+**/	
 void FieldInterface::checkOverheat() {
 	_temperature = _thermistor.getTemperature();
 

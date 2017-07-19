@@ -8,6 +8,7 @@
  * @date 2017-07-13 	update with reverse handling.
  * @date 2017-07-14 	outlined jetson commander and some additional methods
  * @date 2017-07-14 	refactored with references. Bug fixing.
+ * @date 2017-07-17		Implemented getRegenCmd, fixed pinmodes.
 **/
 
 #include "commander.h"
@@ -75,10 +76,11 @@ int PhysCommander::getSteeringCmd() {
  **/
 int PhysCommander::getRegenCmd(){
 	//E TODO
-	if ! digitalRead(_p_brake_1) && ! digitalRead(_p_brake_2) { //E both switches pressed
+	int cmd;
+	if (! digitalRead(_p_brake_1) && ! digitalRead(_p_brake_2)) { //E both switches pressed
 		cmd = 255;
 	}
-	else if ! digitalRead(_p_brake_1) || ! digitalRead(_p_brake_2) { //E one switch pressed
+	else if (! digitalRead(_p_brake_1) || ! digitalRead(_p_brake_2)) { //E one switch pressed
 		cmd = 127;
 	} else {
 		cmd = 0;

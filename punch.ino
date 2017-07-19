@@ -55,7 +55,7 @@ void setup(){
 	MotorInterface motor(P_MOTOR_PWM,P_REGEN_PWM,P_SET_REVERSE,REGEN_MIN_FIELD,field,motor_pid,speed_sensor);
 	ServoInterface servo(P_SERVO_PWM_A,P_SERVO_PWM_B,P_SET_SERVO,servo_pot,steering_pid);
 
-	PhysCommander pcommander(P_REVERSE_SWITCH,P_BRAKE_1,P_BRAKE_2,motor_throttle,field_throttle);
+	PhysCommander pcommander(P_REVERSE_SWITCH,P_AUTONOMY_SWITCH,P_BRAKE_1,P_BRAKE_2,motor_throttle,field_throttle);
 	JetsonCommander jcommander;
 
 
