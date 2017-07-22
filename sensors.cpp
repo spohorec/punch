@@ -112,12 +112,21 @@ AngleSensor::AngleSensor(int p_angle_sensor, double sensor_min_v,
 
 /**
  * @func AngleSensor::getAngle
- * @brief returns angle measurement from angle sensor
+ * @brief returns angle measurement from angle sensor linearized around midpoint
  * @returns [int] angle measurement from sensor
 **/
 int AngleSensor::getAngle() {
 	//E TODO
-	return 0;
+	// return 0;
+	int reading = analogRead(_p_angle_sensor);
+	return (int) reading;
+	// int angle;
+	// if (reading < _sensor_mid_v) {
+	// 	angle = (reading - _sensor_min_v) / (_sensor_mid_v - _sensor_min_v) * 127;
+	// } else {
+	// 	angle = ((reading - _sensor_mid_v) / (_sensor_max_v - _sensor_mid_v) * 127) + 127;
+	// }
+	// return angle;
 }
 
 // ----------------------------------------------------------------------------------------------
