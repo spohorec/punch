@@ -5,17 +5,19 @@
 
 	@date 2017-06-18 creation
 
-
-
 **/
 
-// #include <Arduino.h>
 #include <digitalWriteFast.h>
 #include "acid.h"
+#include <ros.h>
+
+ros::NodeHandle nh; //E this must be global for rosserial_arduino to correctly communicate with a computer
 
 void setup(){
 
-	Serial.begin(9600); 
+
+	// nh.initNode();
+	Serial.begin(115200); 
 
 	//E Setup Fast PWM on pin 11
 	pinMode(P_FIELD_PWM,OUTPUT);
@@ -58,8 +60,15 @@ void setup(){
 	PhysCommander pcommander(P_REVERSE_SWITCH,P_AUTONOMY_SWITCH,P_BRAKE_1,P_BRAKE_2,motor_throttle,field_throttle);
 	JetsonCommander jcommander;
 
+	// const char[] m_topic = "motors";
+	// const char[] s_topic = "steering";
+	// const char* motor_topic = &m_topic;
+	// const char* steering_topic = &s_topic;
 
-	Acid acid(pcommander,jcommander,motor,servo,MOTOR_LOOP,STEER_LOOP,PUB_LOOP);
+	Messenger messenger(nh,"motors","steering");
+
+
+	Acid acid(nh,messenger,pcommander,jcommander,motor,servo,MOTOR_LOOP,STEER_LOOP,PUB_LOOP);
 	// acid.prep();
 
 	acid.drop();

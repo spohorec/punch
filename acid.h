@@ -14,6 +14,11 @@
 #define __ACID_H
 
 #include <Arduino.h>
+#include <ros.h>
+
+#include <koolaid/Motors.h>
+#include <koolaid/Steering.h>
+
 #include "commander.h"
 #include "motorinterface.h"
 #include "sensors.h"
@@ -93,9 +98,30 @@
 #define STEER_LOOP 10 //@def [ms] period of steering loop
 #define PUB_LOOP 10 //@def [ms] period of publishing loop
 
+#define MOTORS_TOPIC "motors"
+#define STEERING_TOPIC "steering"
 
-#define lg(var) Serial.print(#var);Serial.print(": ");Serial.println(var)
-#define lg3(var1,var2,var3) Serial.print(#var1);Serial.print(": ");Serial.print(var1);Serial.print("\t");Serial.print(#var2);Serial.print(": ");Serial.print(var2);Serial.print("\t");Serial.print(#var3);Serial.print(": ");Serial.println(var3)
+// #define lg(var) Serial.print(#var);Serial.print(": ");Serial.println(var)
+// #define lg3(var1,var2,var3) Serial.print(#var1);Serial.print(": ");Serial.print(var1);Serial.print("\t");Serial.print(#var2);Serial.print(": ");Serial.print(var2);Serial.print("\t");Serial.print(#var3);Serial.print(": ");Serial.println(var3)
+
+
+class Messenger {
+public:
+	Messenger(ros::NodeHandle& nh, const char* motors_topic, const char* steering_topic);
+	void sendMotorsMsg(int motor_command, unsigned char field_command, unsigned char regen_command, 
+		int motor_input, unsigned char field_input, unsigned char regen_input, long rpm);
+	void sendSteeringMsg(unsigned char angle_command, unsigned char angle);
+
+private:
+	ros::NodeHandle& _nh;
+	
+	koolaid::Motors* _motors_msg;
+	koolaid::Steering* _steering_msg; //E TODO
+
+	ros::Publisher _motors_pub;
+	ros::Publisher _steer_pub;
+};
+
 
 /**
  * @class Acid
@@ -103,7 +129,7 @@
 **/
 class Acid {
 public:
-	Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface& servo, int motor_interval, int steer_interval, int pub_interval);
+	Acid(ros::NodeHandle& nh, Messenger& messenger, PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface& servo, int motor_interval, int steer_interval, int pub_interval);
 	void prep();
 	void drop();
 	void test();
@@ -114,6 +140,10 @@ private:
 	void setAutonomy(int mode);
 
 	int _motor_interval, _steer_interval, _pub_interval;
+
+	ros::NodeHandle& _nh;
+
+	Messenger& _messenger;
 
 	PhysCommander& _pcommander;
 	JetsonCommander& _jcommander;
