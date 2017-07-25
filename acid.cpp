@@ -45,6 +45,10 @@ Acid::Acid(ros::NodeHandle& nh, Messenger& messenger, PhysCommander& pcommander,
 	_t_last_steer = _t_last_motor;
 	_t_last_pub = _t_last_motor;
 
+	_steer_cmd = 0;
+	_motor_cmd = 0;
+	_field_cmd = 0;
+	_regen_cmd = 0;
 }
 
 /**
@@ -101,11 +105,11 @@ void Acid::drop() {
  * @brief gets and sends motor (speed) commands
  **/
 void Acid::speed() {
-	int field_cmd = _commander->getFieldCmd();
-	int motor_cmd = _commander->getMotorCmd();
-	int regen_cmd = _commander->getRegenCmd();
+	_field_cmd = _commander->getFieldCmd();
+	_motor_cmd = _commander->getMotorCmd();
+	_regen_cmd = _commander->getRegenCmd();
 	// lg3(motor_cmd,field_cmd,regen_cmd);
-	_motor.handleCmds(motor_cmd, field_cmd, regen_cmd);
+	_motor.handleCmds(_motor_cmd, _field_cmd, _regen_cmd);
 }
 
 /**
@@ -113,8 +117,8 @@ void Acid::speed() {
  * @brief gets and sends servo (steering) commands
  **/
 void Acid::steer() {
-	int steer_cmd = _commander->getSteeringCmd();
-	_servo.handleCmd(steer_cmd);
+	_steer_cmd = _commander->getSteeringCmd();
+	_servo.handleCmd(_steer_cmd);
 }
 
 /**
@@ -123,7 +127,12 @@ void Acid::steer() {
  **/
 void Acid::publish() {
 
-	_messenger.sendMotorsMsg(0,0,0,0,0,0,0);
+	int last_motor_inp = _motor.getLastMotorInput();
+	unsigned char last_field_inp =_motor.getLastFieldInput();
+	unsigned char last_regen_inp =_motor.getLastRegenInput();
+	long last_rpm =_motor.getLastRPM();
+
+	_messenger.sendMotorsMsg(_motor_cmd,_field_cmd,_regen_cmd,last_motor_inp,last_field_inp,last_regen_inp,last_rpm);
 	_messenger.sendSteeringMsg(0,0);
 	//E publish things
 	//E! TODO

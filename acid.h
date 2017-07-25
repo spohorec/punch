@@ -156,6 +156,10 @@ private:
 	int _mode;
 
 	unsigned long _t_last_motor, _t_last_steer, _t_last_pub;
+	
+	int _motor_cmd;
+	long _steer_cmd;
+	unsigned char _regen_cmd, _field_cmd;
 };
 
 #endif
