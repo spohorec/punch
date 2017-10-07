@@ -22,12 +22,24 @@
  * @param [int] <steer_interval> steer-control loop interval
  * @param [int] <pub_interval> ROS publishing loop interval
 **/
-Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface &servo, int motor_interval, int steer_interval, int pub_interval)
+Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor,
+            ServoInterface &servo, int motor_interval, int steer_interval, int pub_interval,
+            SpeedSensor *motor_rpm_sensor, ros::NodeHandle *nh,
+            std_msgs::UInt8 *steer_angle_msg, 
+            std_msgs::UInt8 *throttle_msg,
+            std_msgs::UInt8 *motor_rpm_msg,
+            std_msgs::Bool *brake_left_msg,
+            std_msgs::Bool *brake_right_msg,
+            ros::Publisher *steer_angle_pub,
+            ros::Publisher *throttle_pub, 
+            ros::Publisher *motor_rpm_pub, 
+            ros::Publisher *brake_left_pub, 
+            ros::Publisher *brake_right_pub)
 		: _pcommander(pcommander),
 		  _jcommander(jcommander),
 		  _motor(motor),
 		  _servo(servo) {
-
+  
 	_motor_interval = motor_interval;
 	_steer_interval = steer_interval;
 	_pub_interval = pub_interval;
@@ -39,6 +51,20 @@ Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterfac
 	_t_last_steer = _t_last_motor;
 	_t_last_pub = _t_last_motor;
 
+  _motor_rpm_sensor = motor_rpm_sensor;
+  
+  _nh = nh;
+  _steer_angle_msg = steer_angle_msg;
+  _throttle_msg = throttle_msg;
+  _motor_rpm_msg = motor_rpm_msg;
+  _brake_left_msg = brake_left_msg;
+  _brake_right_msg = brake_right_msg;
+  _steer_angle_pub = steer_angle_pub;
+  _throttle_pub = throttle_pub;
+  _motor_rpm_pub = motor_rpm_pub;
+  _brake_left_pub = brake_left_pub;
+  _brake_right_pub = brake_right_pub;
+
 }
 
 /**
@@ -47,7 +73,12 @@ Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterfac
  **/
 void Acid::prep() {
 	//E be preppy
-	//E! TODO (may be unneccesary?)
+	//$ clear messages
+  _steer_angle_msg->data = 0;
+  _throttle_msg->data = 0;
+  _motor_rpm_msg->data = 0;
+  _brake_left_msg->data = 0;
+  _brake_right_msg->data = 0;
 }
 
 /**
@@ -59,6 +90,8 @@ void Acid::drop() {
 	_t_last_motor = _t_last_steer = _t_last_pub = millis();
 
 	while (TRIPPING) {
+    _nh->spinOnce(); //$ spin node handle
+    
 		unsigned long t = millis(); //E current time
 
 		//E time periods since that actions taken
@@ -109,12 +142,30 @@ void Acid::steer() {
 }
 
 /**
- * @func PRIVATE Acid::publish
+ * @func PRIVATE Acid::publishmotor revs between check times
  * @brief gets messages and does ROS publishing
  **/
 void Acid::publish() {
+
+  //TODO: Update these only when they are first read, not when we publish. 
+  _motor_rpm = _motor_rpm_sensor->getRPM();
+  _steer_angle = analogRead(P_SERVO_POT);
+  _throttle = analogRead(P_MOTOR_THROTTLE);
+  _brake_left = digitalRead(P_BRAKE_1);
+  _brake_right = digitalRead(P_BRAKE_2);
+  
 	//E publish things
-	//E! TODO
+  _steer_angle_msg->data = _steer_angle;
+  _throttle_msg->data = _throttle;
+  _motor_rpm_msg->data = _motor_rpm;
+  _brake_left_msg->data = _brake_left;
+  _brake_right_msg->data = _brake_right;
+  
+  _steer_angle_pub->publish(_steer_angle_msg);
+  _throttle_pub->publish(_throttle_msg);
+  _motor_rpm_pub->publish(_motor_rpm_msg);
+  _brake_left_pub->publish(_brake_left_msg);
+  _brake_right_pub->publish(_brake_right_msg);
 }
 
 /**

@@ -75,10 +75,11 @@ int PhysCommander::getSteeringCmd() {
  **/
 int PhysCommander::getRegenCmd(){
 	//E TODO
-	if ! digitalRead(_p_brake_1) && ! digitalRead(_p_brake_2) { //E both switches pressed
+  int cmd = 0;
+	if(! digitalRead(_p_brake_1) && ! digitalRead(_p_brake_2)) { //E both switches pressed
 		cmd = 255;
 	}
-	else if ! digitalRead(_p_brake_1) || ! digitalRead(_p_brake_2) { //E one switch pressed
+	else if(! digitalRead(_p_brake_1) || ! digitalRead(_p_brake_2)) { //E one switch pressed
 		cmd = 127;
 	} else {
 		cmd = 0;

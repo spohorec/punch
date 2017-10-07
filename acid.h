@@ -19,6 +19,11 @@
 #include "sensors.h"
 #include "pidcontroller.h"
 
+#include <ros.h>
+#include <geometry_msgs/Vector3.h>  //$ for gain adjustment
+#include <std_msgs/UInt8.h>         //$ for mode publishing
+#include <std_msgs/Bool.h>          //$ for estop subscriber
+
 #define TRIPPING true //@def I am funny hi
 
 #define P_AUTONOMY_SWITCH 1 //@def Physical mode switch input pin
@@ -102,7 +107,19 @@
 **/
 class Acid {
 public:
-	Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor, ServoInterface& servo, int motor_interval, int steer_interval, int pub_interval);
+	Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterface& motor,
+            ServoInterface &servo, int motor_interval, int steer_interval, int pub_interval, 
+            SpeedSensor *motor_rpm_sensor, ros::NodeHandle *nh,
+            std_msgs::UInt8 *steer_angle_msg, 
+            std_msgs::UInt8 *throttle_msg,
+            std_msgs::UInt8 *motor_rpm_msg,
+            std_msgs::Bool *brake_left_msg,
+            std_msgs::Bool *brake_right_msg,
+            ros::Publisher *steer_angle_pub,
+            ros::Publisher *throttle_pub, 
+            ros::Publisher *motor_rpm_pub, 
+            ros::Publisher *brake_left_pub, 
+            ros::Publisher *brake_right_pub);
 	void prep();
 	void drop();
 	void test();
@@ -125,6 +142,26 @@ private:
 	int _mode;
 
 	unsigned long _t_last_motor, _t_last_steer, _t_last_pub;
+  
+  SpeedSensor *_motor_rpm_sensor;
+  ros::NodeHandle *_nh;
+  std_msgs::UInt8 *_steer_angle_msg;
+  std_msgs::UInt8 *_throttle_msg;
+  std_msgs::UInt8 *_motor_rpm_msg;
+  std_msgs::Bool *_brake_left_msg;
+  std_msgs::Bool *_brake_right_msg;
+  ros::Publisher *_steer_angle_pub;
+  ros::Publisher *_throttle_pub;
+  ros::Publisher *_motor_rpm_pub;
+  ros::Publisher *_brake_left_pub;
+  ros::Publisher *_brake_right_pub;
+  
+  //Read Sensors
+  unsigned int _steer_angle;
+  unsigned int _throttle;
+  unsigned int _motor_rpm;
+  bool _brake_left;
+  bool _brake_right;
 };
 
 #endif

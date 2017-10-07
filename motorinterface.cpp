@@ -3,12 +3,14 @@
  * Electric Kool-Aide Motor Controller-Controllers
  * 
  * 	@author Sarah Pohorecky <spohorec@mit.edu>
+ *  @author Daniel J. Gonzalez <dgonz@mit.edu>
  * 
  * 	@date 2017-07-08 creation.
  * 	@date 2017-07-13 update with reverse handling.
  * 	@date 2017-07-13 refactor, hopefully more reasonably?
  *	@date 2017-07-13 added ServoInterface outline.
  *  @date 2017-07-14 refactored with references. Bug fixing.
+ *  @date 2017-10-04 removed field stuff, no longer being used
 **/
 
 #include "motorinterface.h"
@@ -67,19 +69,31 @@ void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
 
 	_last_rpm = _encoder.getRPM();
 
-	handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs
+	//handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs. No longer in use.
 	handleRegen(); 
 	handleMotor();
 }
 
-std::array<int,3> MotorInterface::getLastInps(){
-	return {_last_motor_input, _last_field_input, _last_regen_input};
+//std::array<int,3> MotorInterface::getLastInps(){
+//	return {_last_motor_input, _last_field_input, _last_regen_input};
+//}
+
+
+//This way works for Arduino, pass array and populate it.
+////To use: 
+//int last_inps[3];
+//getLastInps(&last_inps); //Populated!
+void MotorInterface::getLastInps(int *_return_array){
+  _return_array[0] =  _last_motor_input;
+  _return_array[1] =  _last_field_input;
+  _return_array[2] =  _last_regen_input;
 }
 
 /**
  * @func PRIVATE MotorInterface::handleField
  * @brief increases field if needed for regen, calls adjustment on field limits, sends field command to field_interface
 **/
+//  MARKED FOR DELETE:
 void MotorInterface::handleField() {
 	int field_input = _last_field_cmd;
 

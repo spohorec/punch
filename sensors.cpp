@@ -67,7 +67,6 @@ long SpeedSensor::getTicks() {
 
 	ticks = encoder_ticks;
 	encoder_ticks = 0;
-
 	_t_last_read = millis(); //E updates last read time
 
 	return ticks;
@@ -79,6 +78,10 @@ long SpeedSensor::getTicks() {
  * @returns [long] rpm of motor
 **/
 long SpeedSensor::getRPM() {
+
+  //MAYBE TODO FOR LOW SPEED SENSING: If ticks is 0, that means motor is spinning slower than 
+  //  can be read. Shift to mode where we start a timer and end the timer when we read the 
+  //  next tick. So that instead of #ticks/setPeriod it becomes 1tick/timeBetweenTicks. 
 
 	long t_last_read = _t_last_read; //E get time of last read since getTicks() will overwrite it
 	long ticks = getTicks();
