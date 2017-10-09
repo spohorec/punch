@@ -26,14 +26,28 @@
 // ----------------------------------------------------------------------------------------------
 
 volatile long encoder_ticks;  //E number of ticks recorded on the encoder
+volatile long encoder_period;  //E period between encoder ticks, for low speed sensing. [microseconds]
+volatile long encoder_time;  //E temp variable for low speed sensing. [microseconds]
+volatile long encoder_time_prev;  //E temp variable for low speed sensing. [microseconds]
 
 /**
  * @func EncoderISR 
- * @brief Encoder Interrupt Service Routine. Increments tick counter.
+ * @brief Encoder Interrupt Service Routine. Increments tick counter. Works if motor RPM is high enough
 **/
 void EncoderISR() { 
 	encoder_ticks+=1;
 }
+
+/**
+ * @func EncoderISR2
+ * @brief Encoder Interrupt Service Routine. Resets a timer when a tick is detected. 
+**/
+void EncoderISR2() { 
+  encoder_time = micros();
+  encoder_period = encoder_time - encoder_time_prev;
+  encoder_time_prev = encoder_time;
+}
+
 
 // ----------------------------------------------------------------------------------------------
 
@@ -51,7 +65,8 @@ SpeedSensor::SpeedSensor(int p_encoder, int interrupt, double pulses_per_rev) {
 	_pulses_per_rev = pulses_per_rev;
 
 	pinMode(_p_encoder, INPUT_PULLUP); //E encoder requires a pullup resistor
-	attachInterrupt(_interrupt, EncoderISR, FALLING); //E! TODO update this to attachPinToInterrupt()?
+//	attachInterrupt(_interrupt, EncoderISR, FALLING); //E! TODO update this to attachPinToInterrupt()?
+  attachInterrupt(_interrupt, EncoderISR2, FALLING); //E! TODO update this to attachPinToInterrupt()?
 	encoder_ticks = 0;
 	
 	_t_last_read = millis();
@@ -83,19 +98,18 @@ long SpeedSensor::getRPM() {
   //  can be read. Shift to mode where we start a timer and end the timer when we read the 
   //  next tick. So that instead of #ticks/setPeriod it becomes 1tick/timeBetweenTicks. 
 
-	long t_last_read = _t_last_read; //E get time of last read since getTicks() will overwrite it
-	long ticks = getTicks();
-
-	long t_current_read = _t_last_read;
-	long dt = t_current_read - t_last_read; //E length of time since last read [ms]
-
-
-	double motor_revs = (double) ticks / _pulses_per_rev;
-
+	//long t_last_read = _t_last_read; //E get time of last read since getTicks() will overwrite it
+	//long ticks = getTicks();
+	//long t_current_read = _t_last_read;
+	//long dt = t_current_read - t_last_read; //E length of time since last read [ms]
+  //double motor_revs = (double) ticks / _pulses_per_rev;
+  
+  //UPDATE: We need to do the other thing:
+  double motor_revs = (double) 1.0/_pulses_per_rev;
+  double dt = (double) encoder_period/1000.0; // encoder period in seconds
+  
 	double rpm = motor_revs / dt * (1000 * 60.0); //E calculates revs/ms and converts to revs/min
-
 	return (long) rpm; 
-
 }
 
 // ----------------------------------------------------------------------------------------------

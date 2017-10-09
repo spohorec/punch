@@ -45,7 +45,7 @@
 //E Encoder parameters
 #define P_ENCODER 2 //@def Encoder input pin
 #define ENCODER_INTERRUPT 0 //@def Interrupt attached to motor encoder
-#define PULSES_PER_REV 600.0 //@def Number of encoder pulses per full motor revolution //E! TODO Confirm this value for Kool-Aid
+#define PULSES_PER_REV 20.0 //@def Number of encoder pulses per full motor revolution //E! TODO Confirm this value for Kool-Aid
 
 //E Field parameters
 #define P_FIELD_PWM 11 //@def Field driver command output pin

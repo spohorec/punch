@@ -22,8 +22,11 @@
 
 
 extern volatile long encoder_ticks;
+extern volatile long encoder_period;
+extern volatile long encoder_time;  //E temp variable for low speed sensing. [microseconds];
 
 void EncoderISR();
+void EncoderISR2();
 
 // ----------------------------------------------------------------------------------------------
 
