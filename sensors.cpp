@@ -43,9 +43,9 @@ void EncoderISR() {
  * @brief Encoder Interrupt Service Routine. Resets a timer when a tick is detected. 
 **/
 void EncoderISR2() { 
-  encoder_time = micros();
-  encoder_period = encoder_time - encoder_time_prev;
-  encoder_time_prev = encoder_time;
+  //encoder_time = micros();
+  //encoder_period = encoder_time - encoder_time_prev;
+  //encoder_time_prev = encoder_time;
 }
 
 
@@ -68,7 +68,6 @@ SpeedSensor::SpeedSensor(int p_encoder, int interrupt, double pulses_per_rev) {
 //	attachInterrupt(_interrupt, EncoderISR, FALLING); //E! TODO update this to attachPinToInterrupt()?
   attachInterrupt(_interrupt, EncoderISR2, FALLING); //E! TODO update this to attachPinToInterrupt()?
 	encoder_ticks = 0;
-	
 	_t_last_read = millis();
 }
 
@@ -107,6 +106,12 @@ long SpeedSensor::getRPM() {
   //UPDATE: We need to do the other thing:
   double motor_revs = (double) 1.0/_pulses_per_rev;
   double dt = (double) encoder_period/1000.0; // encoder period in seconds
+
+  //If we 
+  //TEST THIS
+  if(millis() - encoder_time >= 100){
+    motor_revs = 0;
+  }
   
 	double rpm = motor_revs / dt * (1000 * 60.0); //E calculates revs/ms and converts to revs/min
 	return (long) rpm; 

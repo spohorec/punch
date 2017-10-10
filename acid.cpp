@@ -28,11 +28,13 @@ Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterfac
             std_msgs::UInt8 *steer_angle_msg, 
             std_msgs::UInt8 *throttle_msg,
             std_msgs::UInt8 *motor_rpm_msg,
+            std_msgs::Bool *drive_dir_msg,
             std_msgs::Bool *brake_left_msg,
             std_msgs::Bool *brake_right_msg,
             ros::Publisher *steer_angle_pub,
             ros::Publisher *throttle_pub, 
             ros::Publisher *motor_rpm_pub, 
+            ros::Publisher *drive_dir_pub, 
             ros::Publisher *brake_left_pub, 
             ros::Publisher *brake_right_pub)
 		: _pcommander(pcommander),
@@ -57,11 +59,14 @@ Acid::Acid(PhysCommander& pcommander, JetsonCommander& jcommander, MotorInterfac
   _steer_angle_msg = steer_angle_msg;
   _throttle_msg = throttle_msg;
   _motor_rpm_msg = motor_rpm_msg;
+  _drive_dir_msg = drive_dir_msg;
   _brake_left_msg = brake_left_msg;
   _brake_right_msg = brake_right_msg;
+  
   _steer_angle_pub = steer_angle_pub;
   _throttle_pub = throttle_pub;
   _motor_rpm_pub = motor_rpm_pub;
+  _drive_dir_pub = drive_dir_pub;
   _brake_left_pub = brake_left_pub;
   _brake_right_pub = brake_right_pub;
 
@@ -149,21 +154,25 @@ void Acid::publish() {
 
   //TODO: Update these only when they are first read, not when we publish. 
   _motor_rpm = _motor_rpm_sensor->getRPM();
-  _steer_angle = analogRead(P_SERVO_POT);
-  _throttle = analogRead(P_MOTOR_THROTTLE);
-  _brake_left = digitalRead(P_BRAKE_1);
-  _brake_right = digitalRead(P_BRAKE_2);
+  _steer_angle = map(analogRead(P_SERVO_POT),0,1023,0,255);
+  int temp_throttle = _commander->getMotorCmd();
+  _throttle = abs(temp_throttle); //Apparently putting functons inside of abs() is bad. Created a temp var instead.
+  _drive_dir = (temp_throttle<<0);
+  _brake_left = !digitalRead(P_BRAKE_1);
+  _brake_right = !digitalRead(P_BRAKE_2);
   
 	//E publish things
   _steer_angle_msg->data = _steer_angle;
   _throttle_msg->data = _throttle;
   _motor_rpm_msg->data = _motor_rpm;
+  _drive_dir_msg->data = _drive_dir;
   _brake_left_msg->data = _brake_left;
   _brake_right_msg->data = _brake_right;
   
   _steer_angle_pub->publish(_steer_angle_msg);
   _throttle_pub->publish(_throttle_msg);
   _motor_rpm_pub->publish(_motor_rpm_msg);
+  _drive_dir_pub->publish(_drive_dir_msg);
   _brake_left_pub->publish(_brake_left_msg);
   _brake_right_pub->publish(_brake_right_msg);
 }

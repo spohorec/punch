@@ -32,22 +32,25 @@ ros::NodeHandle nh;       //$ node handle
 std_msgs::UInt8 steer_angle_msg;
 std_msgs::UInt8 throttle_msg;
 std_msgs::UInt8 motor_rpm_msg;
+std_msgs::Bool drive_dir_msg;
 std_msgs::Bool brake_left_msg;
 std_msgs::Bool brake_right_msg;
 
 void setup(){
 
 	Serial.begin(115200);
-
+ 
   //set up publishers
-  ros::Publisher steer_angle_pub("arduino/steer_angleg", &steer_angle_msg);
+  ros::Publisher steer_angle_pub("arduino/steer_angle", &steer_angle_msg);
   ros::Publisher throttle_pub("arduino/throttle", &throttle_msg);
   ros::Publisher motor_rpm_pub("arduino/motor_rpm", &motor_rpm_msg);
+  ros::Publisher drive_dir_pub("arduino/drive_dir", &drive_dir_msg);
   ros::Publisher brake_left_pub("arduino/brake_left", &brake_left_msg);
   ros::Publisher brake_right_pub("arduino/brake_right", &brake_right_msg);
   nh.advertise(steer_angle_pub);
   nh.advertise(throttle_pub);
   nh.advertise(motor_rpm_pub);
+  nh.advertise(drive_dir_pub);
   nh.advertise(brake_left_pub);
   nh.advertise(brake_right_pub);
 
@@ -94,8 +97,8 @@ void setup(){
 
 
 	Acid acid(pcommander,jcommander,motor,servo,MOTOR_LOOP,STEER_LOOP,PUB_LOOP, &speed_sensor, &nh,
-	          &steer_angle_msg, &throttle_msg, &motor_rpm_msg, &brake_left_msg, &brake_right_msg,
-            &steer_angle_pub, &throttle_pub, &motor_rpm_pub, &brake_left_pub, &brake_right_pub);
+	          &steer_angle_msg, &throttle_msg, &motor_rpm_msg, &drive_dir_msg, &brake_left_msg, &brake_right_msg,
+            &steer_angle_pub, &throttle_pub, &motor_rpm_pub, &drive_dir_pub, &brake_left_pub, &brake_right_pub);
 	 acid.prep();
 
 	acid.drop();
