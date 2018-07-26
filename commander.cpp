@@ -20,9 +20,8 @@
  * @param [int] <p_brake_1> brake 1 switch input pin
  * @param [int] <p_brake_2> brake 2 switch input pin
 **/
-PhysCommander::PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle) 
-		: _motor_throttle(motor_throttle),
-		  _field_throttle(field_throttle) {
+PhysCommander::PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle) 
+		: _motor_throttle(motor_throttle) {
 
 	_p_reverse = p_reverse;
 	_p_mode = p_mode;
@@ -46,17 +45,6 @@ int PhysCommander::getMotorCmd() {
 	int cmd = _motor_throttle.getThrottle();
 	int direction = getDirection();
 	return cmd * direction;
-}
-
-/**
- * @func PhysCommander::getFieldCmd
- * @brief gets field command from throttle
- * @returns [int] field command (0-255)
- **/
-int PhysCommander::getFieldCmd() {
-	int cmd = _field_throttle.getThrottle();
-
-	return cmd;
 }
 
 /**
@@ -138,16 +126,6 @@ JetsonCommander::JetsonCommander() {
  * @returns [int] signed motor command (-255-255)
  **/
 int JetsonCommander::getMotorCmd() {
-	//E! TODO
-	return 0;
-}
-
-/**
- * @func JetsonCommander::getFieldCmd
- * @brief gets signed motor command from jetson
- * @returns [int] field command (0-255)
- **/
-int JetsonCommander::getFieldCmd() {
 	//E! TODO
 	return 0;
 }

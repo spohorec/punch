@@ -21,12 +21,27 @@
 // ----------------------------------------------------------------------------------------------
 
 
-extern volatile long encoder_ticks;
-extern volatile long encoder_period;
-extern volatile long encoder_time;  //E temp variable for low speed sensing. [microseconds];
+//extern volatile long encoder_ticks;  //E number of ticks recorded on the encoder
+//extern volatile long encoder_period;  //E period between encoder ticks, for low speed sensing. [microseconds]
+//extern volatile long encoder_time;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_time_prev;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_r_ticks;  //E number of ticks recorded on the encoder
+//extern volatile long encoder_r_period;  //E period between encoder ticks, for low speed sensing. [microseconds]
+//extern volatile long encoder_r_time;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_r_time_prev;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_fr_ticks;  //E number of ticks recorded on the encoder
+//extern volatile long encoder_fr_period;  //E period between encoder ticks, for low speed sensing. [microseconds]
+//extern volatile long encoder_fr_time;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_fr_time_prev;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_fl_ticks;  //E number of ticks recorded on the encoder
+//extern volatile long encoder_fl_period;  //E period between encoder ticks, for low speed sensing. [microseconds]
+//extern volatile long encoder_fl_time;  //E temp variable for low speed sensing. [microseconds]
+//extern volatile long encoder_fl_time_prev;  //E temp variable for low speed sensing. [microseconds]
 
-void EncoderISR();
+//void EncoderISR();
 void EncoderISR2();
+void EncoderFLISR2();
+void EncoderFRISR2();
 
 // ----------------------------------------------------------------------------------------------
 
@@ -39,6 +54,9 @@ public:
   SpeedSensor(int p_encoder, int interrupt, double pulses_per_rev);
   long getTicks();
   long getRPM();
+  void prepTicks();
+  void clearTicks();
+  void prepPeriod();
 private:
   int _p_encoder, _interrupt;
   long _t_last_read;
@@ -59,7 +77,6 @@ public:
 private:
 	int _p_angle_sensor;
 	int _sensor_min, _sensor_mid, _sensor_max;
-
 };
 
 // ----------------------------------------------------------------------------------------------
@@ -84,14 +101,14 @@ private:
  * @class Thermistor
  * @brief handles readings from thermistor and converts them into mesaured temperature
 **/
-class Thermistor {
-public:
-  Thermistor(int p_thermistor, double reference_res, double T0, double R0, double B);
-  double getTemperature();
-private:
-  int _p_thermistor;
-  double _reference_res;
-  double _T0, _R0, _B, _rInf;
-};
+//class Thermistor {
+//public:
+//  Thermistor(int p_thermistor, double reference_res, double T0, double R0, double B);
+//  double getTemperature();
+//private:
+//  int _p_thermistor;
+//  double _reference_res;
+//  double _T0, _R0, _B, _rInf;
+//};
 
 #endif

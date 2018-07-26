@@ -25,7 +25,6 @@
 class Commander {
 public:
 	virtual int getMotorCmd();
-	virtual int getFieldCmd();
 	virtual int getSteeringCmd();
 	virtual int getRegenCmd();
 	virtual bool getEstop();
@@ -41,9 +40,8 @@ public:
 **/
 class PhysCommander: public Commander {
 public:
-	PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle, Throttle& field_throttle);
+	PhysCommander(int p_reverse, int p_mode, int p_brake_1, int p_brake_2, Throttle& motor_throttle);
 	int getMotorCmd();
-	int getFieldCmd();
 	int getSteeringCmd();
 	int getRegenCmd();
 	bool getEstop();
@@ -51,7 +49,7 @@ public:
 private:
 	int getDirection();
 
-	Throttle& _motor_throttle, _field_throttle;
+	Throttle& _motor_throttle;
 	
 	int _p_reverse, _p_mode, _p_brake_1, _p_brake_2;
 };
@@ -66,7 +64,6 @@ class JetsonCommander: public Commander {
 public:
 	JetsonCommander();
 	int getMotorCmd();
-	int getFieldCmd();
 	int getSteeringCmd();
 	int getRegenCmd();
 	bool getEstop();

@@ -9,7 +9,7 @@
  * @date    2017-07-09    sarah   ported from gigabug, minor changes
  **/
 
-#include <Arduino.h>
+//#include <Arduino.h>
 #include "pidcontroller.h"
 
 PIDController::PIDController(long kp, long ki, long kd, long out_max, long out_min) {

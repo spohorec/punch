@@ -19,17 +19,14 @@
  * @constr MotorInterface::MotorInterface
  * @brief initializes settings, sensors, and readings for motor.
  * @param [int] <p_motor_pwm> pin tied to input to motor controller
- * @param [int] <p_regen_pwm> pin tied to input to field controller
  * @param [int] <p_reverse_switch> pin tied to Kelly KEB reverse switch
- * @param [int] <regen_min_field> minimum field inp needed for regen to function
- * @param [FieldInterface] <field> field interface object to control field
  * @param [PIDController] <motor_pid> PID Controller for the motors (speed loop)
  * @param [SpeedSensor] <encoder> motor encoder interface
 **/
-MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, int regen_min_field, FieldInterface& field, PIDController& motor_pid, SpeedSensor& encoder):
+MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_switch, PIDController& motor_pid, SpeedSensor& encoder):
 		_encoder(encoder),
-		_motor_pid(motor_pid),
-		_field(field) {
+		_motor_pid(motor_pid)
+		{
 
 	_p_motor_pwm = p_motor_pwm;
 	_p_regen_pwm = p_regen_pwm;
@@ -37,18 +34,14 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
 	_p_reverse_switch = p_reverse_switch;
 	pinMode(_p_reverse_switch,INPUT); //E Kelly switches are ON when GROUNDED. This makes switch floating (off)
 
-	_regen_min_field = regen_min_field;
-
 	_reverse_on = false;
 	_regen_on = false;
 	_pid_on = false;
 
 	_last_motor_cmd = 0; //E last commands sent to interface by commander
-	_last_field_cmd = 0;
 	_last_regen_cmd = 0;
 
 	_last_motor_input = 0; //E last actual inputs interface sent to motors (may differ from commands)
-	_last_field_input = 0;
 	_last_regen_input = 0;
 
 	_last_rpm = 0; //E last RPM reading from _encoder
@@ -59,23 +52,20 @@ MotorInterface::MotorInterface(int p_motor_pwm, int p_regen_pwm, int p_reverse_s
  * @func MotorInterface::handleCmds
  * @brief takes in commands from commander, runs handling routines.
  * @param [int] <motor_cmd> command to main motor (0-255)
- * @param [int] <field_cmd> command to field controller (0-255)
  * @param [int] <regen_cmd> command to regen (0-255)
 **/
-void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
+void MotorInterface::handleCmds(int motor_cmd, int regen_cmd) {
 	_last_motor_cmd = motor_cmd;
-	_last_field_cmd = field_cmd;
 	_last_regen_cmd = regen_cmd;
 
 	_last_rpm = _encoder.getRPM();
 
-	//handleField(); //E handleField() is called first since the command has to be adjusted based on other inputs. No longer in use.
 	handleRegen(); 
 	handleMotor();
 }
 
 //std::array<int,3> MotorInterface::getLastInps(){
-//	return {_last_motor_input, _last_field_input, _last_regen_input};
+//	return {_last_motor_input, _last_regen_input};
 //}
 
 
@@ -85,29 +75,7 @@ void MotorInterface::handleCmds(int motor_cmd, int field_cmd, int regen_cmd) {
 //getLastInps(&last_inps); //Populated!
 void MotorInterface::getLastInps(int *_return_array){
   _return_array[0] =  _last_motor_input;
-  _return_array[1] =  _last_field_input;
-  _return_array[2] =  _last_regen_input;
-}
-
-/**
- * @func PRIVATE MotorInterface::handleField
- * @brief increases field if needed for regen, calls adjustment on field limits, sends field command to field_interface
-**/
-//  MARKED FOR DELETE:
-void MotorInterface::handleField() {
-	int field_input = _last_field_cmd;
-
-	if (_last_regen_cmd > 0 && field_input < _regen_min_field) { //E increase field voltage if too low for regen
-		field_input = _regen_min_field;
-	}
-
-	_field.setMaxVoltage(_last_rpm); //E command field_interface to set speed-based voltage limits
-
-	if (field_input > 255) field_input = 255; //E check range
-	if (field_input < 0 ) field_input = 0;
-
-	_field.sendCmd(field_input);
-	_last_field_input = field_input;
+  _return_array[1] =  _last_regen_input;
 }
 
 /**
@@ -146,6 +114,7 @@ void MotorInterface::handleMotor() {
 	if (motor_input > 255) motor_input = 255; //E check range
 	if (motor_input < 0) motor_input = 0;
 
+//  analogWrite(_p_motor_pwm,0);
 	analogWrite(_p_motor_pwm,motor_input);
 	_last_motor_input = motor_input;
 }
@@ -179,88 +148,6 @@ void MotorInterface::setReverseOn(bool reverse_on) {
 		}
 		_reverse_on = reverse_on;
 	} 
-}
-
-// ----------------------------------------------------------------------------------
-
-/**
- * @constr FieldInterface::FieldInterface
- * @brief initializes settings, sensors, and readings for field controller.
- * @param [double] <min_v> minimum voltage of field
- * @param [double] <slow_max_v> maximum voltage of field at low speed
- * @param [double] <fast_max_v> maximum voltage of field at high speed
- * @param [long] <rpm_lower_limit> rpm below which max_field_v should be set to slow_max_v 
- * @param [long] <rpm_upper_limit> rpm above which max_field_v should be set to fast_max_v 
- * @param [double] <overheat_temperature> temperature at which to set temperature warning indicator
- * @param [int] <p_temp_indicator> pin attached to input of temperature warning indicator 
- * @param [Thermistor] <thermistor> thermistor object for getting motor temperature
-**/
-FieldInterface::FieldInterface(double min_v, 
-	double slow_max_v, double fast_max_v, 
-	long rpm_lower_limit, long rpm_upper_limit, 
-	double overheat_temperature, int p_temp_indicator, Thermistor& thermistor)
-	 : _thermistor(thermistor) {
-
-	_slow_max_v = slow_max_v;
-	_fast_max_v = fast_max_v;
-
-	_min_v = min_v;
-	_max_v = _slow_max_v;
-
-	_rpm_lower_limit = rpm_lower_limit;
-	_rpm_upper_limit = rpm_upper_limit;
-
-	_temperature = 0;
-	_overheat_temperature = overheat_temperature;
-	_p_temp_indicator = p_temp_indicator;
-
-}
-
-/**
- * @func FieldInterface::sendCmd
- * @brief takes cmd (interpreted as % max_field_voltage), calculates PWM and writes fast PWM
- * @param [int] <cmd> (0-255) desired % max field voltage
-**/
-void FieldInterface::sendCmd(int cmd) {
-	checkOverheat(); //E check for overheating
-
-	double v_desired = ((float) cmd / 255) * (_max_v - _min_v) + _min_v;
-	double duty = v_desired / V_BATTERY_MAX;
-	int reg_value = floor(duty*256) - 1; //E duty cycle of PWM is given by (reg_value + 1)/256
-
-	if (reg_value > 255) reg_value = 255;
-	if (reg_value < 0) reg_value = 0; //E? Should this be -1 since val+1 gives duty?
-
-	//E write reg value
-	OCR2A = reg_value; //E! This needs to be changed if arduino platform is switched
-
-}
-
-/**
- * @func FieldInterface::setMaxVoltage
- * @brief takes rpm of motor and sets speed-based field voltage limits
- * @param [int] <motor_rpm> rpm of motor
-**/
-void FieldInterface::setMaxVoltage(int motor_rpm) {
-	if (motor_rpm <= _rpm_lower_limit) {
-		_max_v = _slow_max_v;
-	} else if (motor_rpm >= _rpm_upper_limit) {
-		_max_v = _fast_max_v;
-	}
-}
-
-/**
- * @func PRIVATE FieldInterface::checkOverheat
- * @brief reads temperature from thermistor and sets warning indicator if applicable
-**/
-void FieldInterface::checkOverheat() {
-	_temperature = _thermistor.getTemperature();
-
-	if (_temperature >= _overheat_temperature) {
-		digitalWrite(_p_temp_indicator,HIGH);
-	} else {
-		digitalWrite(_p_temp_indicator,LOW);
-	}
 }
 
 // ----------------------------------------------------------------------------------
