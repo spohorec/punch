@@ -289,10 +289,10 @@ unsigned char Throttle::getThrottle() {
   int raw_throttle = getRawThrottle();
   
   //E scales the throttle to an input between 0 and 255
-  int scaled_throttle = (int) (double((raw_throttle - _throttle_min)) / (_throttle_max - _throttle_min) * 255.0);
+  int scaled_throttle = (int) (double((raw_throttle - _throttle_min)) / (_throttle_max - _throttle_min) * (255.0-42.0))+42;
 
   if (scaled_throttle > 255) scaled_throttle = 255;
-  if (scaled_throttle < 0) scaled_throttle = 0;
+  if (scaled_throttle < 42) scaled_throttle = 42;
 
   return (unsigned char) scaled_throttle;
 }

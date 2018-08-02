@@ -112,7 +112,7 @@ void MotorInterface::handleMotor() {
 	}
 
 	if (motor_input > 255) motor_input = 255; //E check range
-	if (motor_input < 0) motor_input = 0;
+	if (motor_input < 42) motor_input = 42;
 
 //  analogWrite(_p_motor_pwm,0);
 	analogWrite(_p_motor_pwm,motor_input);

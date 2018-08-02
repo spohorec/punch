@@ -1,4 +1,4 @@
-/** 
+  /** 
 	koolaid.ino
 	Electric Kool-Aid Turing Test Arduino Code
 	
@@ -33,7 +33,7 @@
 void setup(){
 //  delay(1000); 
   Serial.begin(57600);
-//  delay(500); 
+  delay(500); 
 //  Serial.print("AYY"); // LEAVE THIS HERE, for some reason, it crashes if there's no print statement around here.
 //  delay(500); 
   ros::NodeHandle nh;       //$ node handle

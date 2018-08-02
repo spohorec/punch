@@ -41,8 +41,8 @@
 //E Motor parameters	
 #define P_MOTOR_PWM 9 ///@def Kelly motor command output pin
 #define P_MOTOR_THROTTLE A0 //@def Motor throttle input pin
-#define MOTOR_THROTTLE_MIN_V 1.23 //E Updated after adding pulldown resistor //0.85 //@def Motor throttle min voltage
-#define MOTOR_THROTTLE_MAX_V 4.35 //E Updated after adding pulldown resistor //4.35 //@def Motor throttle max voltage
+#define MOTOR_THROTTLE_MIN_V 0.85 //E Updated after adding pulldown resistor //0.85 //@def Motor throttle min voltage 252
+#define MOTOR_THROTTLE_MAX_V 4.15 //E Updated after adding pulldown resistor //4.35 //@def Motor throttle max voltage 1023
 
 //E Encoder parameters
 #define P_ENCODER 2 //@def Rear Encoder input pin
@@ -61,9 +61,9 @@
 #define P_SERVO_PWM_B 3 //@def Servo PWM B pin
 
 #define P_SERVO_POT A2 //@def Servo pot input pin
-#define SERVO_POT_MIN 724 //472@def Minimum reading on pot //E! TODO
+#define SERVO_POT_MIN 714 //472@def Minimum reading on pot //E! TODO
 #define SERVO_POT_MID 876 //@def Centered reading on pot //E! TODO
-#define	SERVO_POT_MAX 963 //662@def Maximum reading on pot //E! TODO
+#define	SERVO_POT_MAX 974 //662@def Maximum reading on pot //E! TODO
 
 //E PID parameters
 #define MOTOR_PID_OUT_MIN -255 //@def Minimum motor PID output cmd //E! TODO
